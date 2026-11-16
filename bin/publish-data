@@ -1,0 +1,303 @@
+#!/usr/bin/env python3
+"""Arma data.json con SOLO agregados públicos y, si cambió, lo sube a GitHub Pages.
+
+No incluye nombres de clientes, teléfonos, notas, ids ni métodos de pago.
+No usa IA. Se puede correr a mano o desde publish-data-watchdog.
+"""
+from __future__ import annotations
+
+import csv
+import json
+import os
+import subprocess
+import sys
+from datetime import datetime
+from pathlib import Path
+from zoneinfo import ZoneInfo
+
+PT = ZoneInfo("America/Los_Angeles")
+SITE = Path("/workspace/jarvis/hq/civilizaciones")
+DATA_PATH = SITE / "data.json"
+MEME_SUMMARY = Path("/workspace/jarvis/bots/meme-hunter/runs/live/today_summary.json")
+PAPER_STATE = Path("/workspace/jarvis/bots/paper-candles/runs/live/state.json")
+PAPER_PID = Path("/workspace/jarvis/bots/paper-candles/runs/live/paper-candles.pid")
+FINANZAS = Path("/workspace/jarvis/hq/agencia/finanzas")
+CANCELLED = {
+    "cancelado", "cancelada", "cancelados", "canceladas",
+    "inactivo", "inactiva", "churn", "perdido", "perdida",
+    "lost", "baja", "terminado", "terminada",
+}
+
+def now_pt() -> str:
+    return datetime.now(PT).strftime("%Y-%m-%d %H:%M:%S PT")
+
+def money_num(v):
+    if v is None or v == "":
+        return None
+    try:
+        return round(float(str(v).replace(",", "").replace("$", "").strip()), 4)
+    except (TypeError, ValueError):
+        return None
+
+def read_json(path: Path):
+    try:
+        return json.loads(path.read_text(encoding="utf-8"))
+    except (OSError, json.JSONDecodeError):
+        return None
+
+def meme_hunter():
+    out = {
+        "aviso": "SOLO PAPEL / simulado. Sin wallets, llaves ni transacciones reales.",
+        "equity": None,
+        "equity_start": 300,
+        "trades": 0,
+        "wins": 0,
+        "losses": 0,
+        "rugs_skipped": 0,
+        "open_positions": 0,
+        "updated": None,
+    }
+    d = read_json(MEME_SUMMARY)
+    if not d:
+        return out
+    out["updated"] = d.get("updated")
+    rows = d.get("today") or []
+    allg = next(
+        (
+            x
+            for x in rows
+            if x.get("group") == "ALL" and str(x.get("session_date") or "") not in ("all", "")
+        ),
+        None,
+    )
+    if not allg:
+        allg = next((x for x in rows if x.get("group") == "ALL"), None)
+    if allg:
+        eq = money_num(allg.get("equity_final"))
+        start = money_num(allg.get("equity_start"))
+        if eq is not None:
+            out["equity"] = eq
+        if start is not None:
+            out["equity_start"] = start
+        for k in ("trades", "wins", "losses"):
+            try:
+                out[k] = int(allg.get(k) or 0)
+            except (TypeError, ValueError):
+                out[k] = 0
+        try:
+            out["rugs_skipped"] = int(allg.get("rugs_skipped") or 0)
+        except (TypeError, ValueError):
+            out["rugs_skipped"] = 0
+        try:
+            out["open_positions"] = int(allg.get("open_positions") or 0)
+        except (TypeError, ValueError):
+            # may be a list in some dumps
+            op = allg.get("open_positions")
+            out["open_positions"] = len(op) if isinstance(op, list) else 0
+        pnl = money_num(allg.get("net_pnl_usd"))
+        if pnl is not None:
+            out["net_pnl_usd"] = pnl
+        try:
+            out["win_rate_pct"] = float(allg.get("win_rate_pct") or 0)
+        except (TypeError, ValueError):
+            pass
+    if out["open_positions"] == 0 and isinstance(d.get("open_positions"), list):
+        out["open_positions"] = len(d["open_positions"])
+    return out
+
+def pid_running(pid_file: Path, needle: str) -> bool:
+    try:
+        pid = int(pid_file.read_text(encoding="utf-8").strip())
+    except (OSError, ValueError):
+        return False
+    cmd = Path(f"/proc/{pid}/cmdline")
+    if not cmd.exists():
+        return False
+    try:
+        text = cmd.read_bytes().replace(b"\0", b" ").decode("utf-8", "replace")
+    except OSError:
+        return False
+    return needle in text
+
+def book_equity(book: dict) -> float:
+    cash = money_num(book.get("cash")) or 0.0
+    total = cash
+    for pos in book.get("open_pos") or []:
+        if not isinstance(pos, dict):
+            continue
+        if pos.get("value") is not None:
+            v = money_num(pos.get("value"))
+            if v is not None:
+                total += v
+                continue
+        qty = money_num(pos.get("qty") or pos.get("shares") or pos.get("q"))
+        px = money_num(pos.get("px") or pos.get("last") or pos.get("mark") or pos.get("price"))
+        if qty is not None and px is not None:
+            total += qty * px
+    return round(total, 4)
+
+def paper_candles():
+    running = pid_running(PAPER_PID, "paper_candles") or pid_running(PAPER_PID, "paper-candles")
+    out = {
+        "aviso": "SOLO PAPEL. Simulación, sin bróker ni órdenes reales.",
+        "running": bool(running),
+        "day": None,
+        "equity_total": None,
+        "books": [],
+    }
+    st = read_json(PAPER_STATE)
+    if not st:
+        return out
+    out["day"] = st.get("day")
+    books = []
+    total = 0.0
+    for b in st.get("books") or []:
+        if not isinstance(b, dict):
+            continue
+        eq = book_equity(b)
+        cap = money_num(b.get("capital") or b.get("equity_start_day"))
+        books.append({
+            "scenario": str(b.get("scenario") or ""),
+            "capital": cap,
+            "equity": eq,
+        })
+        total += eq
+    out["books"] = books
+    if books:
+        out["equity_total"] = round(total, 4)
+    return out
+
+def csv_rows(path: Path):
+    if not path.exists():
+        return []
+    with path.open(newline="", encoding="utf-8") as f:
+        return list(csv.DictReader(f))
+
+def is_cancelled(estado) -> bool:
+    return str(estado or "").strip().lower() in CANCELLED
+
+def agencia():
+    out = {
+        "clientes": 0,
+        "mrr": 0.0,
+        "costos_mensuales": 0.0,
+        "mensualidad_objetivo": 179,
+        "instalacion_objetivo": 349,
+        "meta_clientes": 1,
+        "meta": "primer cliente esta semana",
+    }
+    clientes = 0
+    mrr = 0.0
+    for row in csv_rows(FINANZAS / "clientes.csv"):
+        # solo contar filas con algún valor; no copiar nombre/ciudad/notas
+        if not any(str(v).strip() for v in row.values()):
+            continue
+        if is_cancelled(row.get("estado_pago")):
+            continue
+        clientes += 1
+        mens = money_num(row.get("mensualidad"))
+        if mens is not None:
+            mrr += mens
+    out["clientes"] = clientes
+    out["mrr"] = round(mrr, 2)
+    costos = 0.0
+    for row in csv_rows(FINANZAS / "costos.csv"):
+        c = money_num(row.get("costo_mensual"))
+        if c is not None:
+            costos += c
+    out["costos_mensuales"] = round(costos, 2)
+    for row in csv_rows(FINANZAS / "precios.csv"):
+        mercado = str(row.get("mercado") or "").lower()
+        if "ee.uu" in mercado or "eeuu" in mercado or "usa" in mercado or "san diego" in mercado:
+            inst = money_num(row.get("instalacion_usd"))
+            men = money_num(row.get("mensualidad_usd"))
+            if inst is not None:
+                out["instalacion_objetivo"] = inst
+            if men is not None:
+                out["mensualidad_objetivo"] = men
+            break
+    return out
+
+def build():
+    mh, pc, ag = meme_hunter(), paper_candles(), agencia()
+    # updated: latest source stamp, not "now", so it stays stable if cifras no cambian
+    stamps = [s for s in (mh.get("updated"), pc.get("day")) if s]
+    return {
+        "aviso": "Solo agregados públicos. Trading en papel. Sin nombres, teléfonos ni notas de clientes.",
+        "updated": mh.get("updated") or now_pt(),
+        "meme_hunter": mh,
+        "paper_candles": pc,
+        "agencia": ag,
+    }
+
+def core_for_compare(d: dict) -> dict:
+    e = json.loads(json.dumps(d))
+    e.pop("updated", None)
+    if isinstance(e.get("meme_hunter"), dict):
+        e["meme_hunter"].pop("updated", None)
+    return e
+
+def dump(d: dict) -> str:
+    return json.dumps(d, ensure_ascii=False, indent=2, sort_keys=True) + "\n"
+
+def in_git_repo(path: Path) -> bool:
+    r = subprocess.run(
+        ["git", "-C", str(path), "rev-parse", "--is-inside-work-tree"],
+        capture_output=True, text=True,
+    )
+    return r.returncode == 0 and r.stdout.strip() == "true"
+
+def has_origin(path: Path) -> bool:
+    r = subprocess.run(
+        ["git", "-C", str(path), "remote", "get-url", "origin"],
+        capture_output=True, text=True,
+    )
+    return r.returncode == 0 and bool(r.stdout.strip())
+
+def git(args, check=True):
+    return subprocess.run(
+        ["git", "-C", str(SITE), *args],
+        check=check, capture_output=True, text=True,
+    )
+
+def main() -> int:
+    payload = build()
+    # never allow unexpected private-looking keys
+    forbidden = ("nombre", "name", "phone", "telefono", "teléfono", "nota", "notes",
+                 "cliente_id", "email", "correo", "whatsapp")
+    blob = json.dumps(payload, ensure_ascii=False).lower()
+    # Don't scan values of aviso text; the payload itself shouldn't have client fields
+    for section in (payload.get("agencia"),):
+        if isinstance(section, dict):
+            for k in section:
+                if k.lower() in {"cliente", "clientes_nombres", "notas", "telefonos"}:
+                    print("ERROR: clave no permitida en data.json:", k, file=sys.stderr)
+                    return 2
+
+    new_text = dump(payload)
+    old = read_json(DATA_PATH)
+    changed = old is None or core_for_compare(old) != core_for_compare(payload)
+    if not changed:
+        print("sin cambios")
+        return 0
+    DATA_PATH.write_text(new_text, encoding="utf-8")
+    print("data.json actualizado:", DATA_PATH)
+    if not in_git_repo(SITE) or not has_origin(SITE):
+        print("aún no hay repo remoto; se escribió el archivo y no se subió")
+        return 0
+    git(["add", "data.json"])
+    diff = git(["diff", "--cached", "--quiet"], check=False)
+    if diff.returncode == 0:
+        print("sin cambios en git")
+        return 0
+    msg = "Actualiza datos públicos de la isla (papel + totales de agencia)"
+    git(["commit", "-m", msg])
+    push = git(["push", "origin", "HEAD"], check=False)
+    if push.returncode != 0:
+        print("ERROR al subir:", (push.stderr or push.stdout).strip(), file=sys.stderr)
+        return 1
+    print("subido a origin")
+    return 0
+
+if __name__ == "__main__":
+    sys.exit(main())

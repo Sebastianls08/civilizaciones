@@ -1,0 +1,64 @@
+#!/usr/bin/env bash
+# Watchdog que publica data.json público cada 15 minutos (sin IA).
+#   publish-data-watchdog              -> background con nohup (no duplica si ya corre)
+#   publish-data-watchdog --foreground -> loop en primer plano
+set -u
+BIN_DIR="$(cd "$(dirname "$(readlink -f "$0")")" && pwd)"
+SITE="$(dirname "$BIN_DIR")"
+RUN_DIR="$SITE/runs"
+WD_PID_FILE="$RUN_DIR/publish-data-watchdog.pid"
+WD_LOG="$RUN_DIR/publish-data-watchdog.log"
+INTERVAL_S="${CIV_PUBLISH_INTERVAL_S:-900}"
+mkdir -p "$RUN_DIR"
+
+wd_alive() {
+  local pid="$1"
+  [ -n "$pid" ] && kill -0 "$pid" 2>/dev/null && \
+    tr '\0' ' ' < "/proc/$pid/cmdline" 2>/dev/null | grep -q "publish-data-watchdog"
+}
+
+wlog() { echo "$(TZ=America/Los_Angeles date '+%Y-%m-%d %H:%M:%S') PT | watchdog: $*" >> "$WD_LOG"; }
+
+FG=0
+for a in "$@"; do [ "$a" = "--foreground" ] && FG=1; done
+
+OLD="$(cat "$WD_PID_FILE" 2>/dev/null || true)"
+if wd_alive "$OLD" && [ "$OLD" != "$$" ]; then
+  echo "publish-data-watchdog ya corre (pid $OLD); no se duplica"
+  exit 0
+fi
+
+if [ "$FG" != "1" ]; then
+  nohup "$BIN_DIR/publish-data-watchdog" --foreground >> "$RUN_DIR/watchdog.out" 2>&1 < /dev/null &
+  NEW=$!
+  sleep 1
+  if kill -0 "$NEW" 2>/dev/null; then
+    echo "publish-data-watchdog arrancado (pid $NEW). Log: $WD_LOG"
+  else
+    echo "publish-data-watchdog terminó enseguida; revisa $RUN_DIR/watchdog.out"
+    exit 1
+  fi
+  exit 0
+fi
+
+echo "$$" > "$WD_PID_FILE"
+SLEEP_PID=""
+cleanup() {
+  [ -n "$SLEEP_PID" ] && kill "$SLEEP_PID" 2>/dev/null || true
+  [ "$(cat "$WD_PID_FILE" 2>/dev/null)" = "$$" ] && rm -f "$WD_PID_FILE"
+  wlog "detenido (pid $$)"
+  exit 0
+}
+trap cleanup TERM INT HUP
+
+wlog "iniciado (pid $$, cada ${INTERVAL_S}s)"
+while :; do
+  wlog "publicando"
+  if ! "$BIN_DIR/publish-data" >> "$WD_LOG" 2>&1; then
+    wlog "publish-data salió con error $?"
+  fi
+  sleep "$INTERVAL_S" &
+  SLEEP_PID=$!
+  wait "$SLEEP_PID" || true
+  SLEEP_PID=""
+done

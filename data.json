@@ -1,0 +1,54 @@
+{
+  "agencia": {
+    "clientes": 0,
+    "costos_mensuales": 0.0,
+    "instalacion_objetivo": 349.0,
+    "mensualidad_objetivo": 179.0,
+    "meta": "primer cliente esta semana",
+    "meta_clientes": 1,
+    "mrr": 0.0
+  },
+  "aviso": "Solo agregados públicos. Trading en papel. Sin nombres, teléfonos ni notas de clientes.",
+  "meme_hunter": {
+    "aviso": "SOLO PAPEL / simulado. Sin wallets, llaves ni transacciones reales.",
+    "equity": 297.3429,
+    "equity_start": 300.0,
+    "losses": 7,
+    "net_pnl_usd": -2.6571,
+    "open_positions": 0,
+    "rugs_skipped": 115,
+    "trades": 11,
+    "updated": "2026-11-16 14:27:45 PT",
+    "win_rate_pct": 36.4,
+    "wins": 4
+  },
+  "paper_candles": {
+    "aviso": "SOLO PAPEL. Simulación, sin bróker ni órdenes reales.",
+    "books": [
+      {
+        "capital": 100.0,
+        "equity": 100.0,
+        "scenario": "ZERO"
+      },
+      {
+        "capital": 1000.0,
+        "equity": 1000.0,
+        "scenario": "ZERO"
+      },
+      {
+        "capital": 100.0,
+        "equity": 100.0,
+        "scenario": "IBKR"
+      },
+      {
+        "capital": 1000.0,
+        "equity": 1000.0,
+        "scenario": "IBKR"
+      }
+    ],
+    "day": "2026-11-16",
+    "equity_total": 2200.0,
+    "running": true
+  },
+  "updated": "2026-11-16 14:27:45 PT"
+}
