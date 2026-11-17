@@ -2,8 +2,8 @@
   "agencia": {
     "clientes": 0,
     "costos_mensuales": 0.0,
-    "instalacion_objetivo": 349.0,
-    "mensualidad_objetivo": 179.0,
+    "instalacion_objetivo": 349,
+    "mensualidad_objetivo": 179,
     "meta": "primer cliente esta semana",
     "meta_clientes": 1,
     "mrr": 0.0
@@ -11,16 +11,16 @@
   "aviso": "Solo agregados públicos. Trading en papel. Sin nombres, teléfonos ni notas de clientes.",
   "meme_hunter": {
     "aviso": "SOLO PAPEL / simulado. Sin wallets, llaves ni transacciones reales.",
-    "equity": 299.3639,
+    "equity": 297.3375,
     "equity_start": 300.0,
-    "losses": 9,
-    "net_pnl_usd": -0.4297,
-    "open_positions": 1,
-    "rugs_skipped": 126,
-    "trades": 14,
-    "updated": "2026-11-16 14:42:58 PT",
-    "win_rate_pct": 35.7,
-    "wins": 5
+    "losses": 8,
+    "net_pnl_usd": -2.6987,
+    "open_positions": 3,
+    "rugs_skipped": 123,
+    "trades": 12,
+    "updated": "2026-11-16 14:41:54 PT",
+    "win_rate_pct": 33.3,
+    "wins": 4
   },
   "paper_candles": {
     "aviso": "SOLO PAPEL. Simulación, sin bróker ni órdenes reales.",
@@ -50,5 +50,5 @@
     "equity_total": 2200.0,
     "running": true
   },
-  "updated": "2026-11-16 14:42:58 PT"
+  "updated": "2026-11-16 14:41:54 PT"
 }
