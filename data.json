@@ -11,44 +11,44 @@
   "aviso": "Solo agregados públicos. Trading en papel. Sin nombres, teléfonos ni notas de clientes.",
   "meme_hunter": {
     "aviso": "SOLO PAPEL / simulado. Sin wallets, llaves ni transacciones reales.",
-    "equity": 297.3375,
-    "equity_start": 300.0,
-    "losses": 8,
-    "net_pnl_usd": -2.6987,
-    "open_positions": 3,
-    "rugs_skipped": 123,
-    "trades": 12,
-    "updated": "2026-11-16 14:41:54 PT",
-    "win_rate_pct": 33.3,
-    "wins": 4
+    "equity": 280.6984,
+    "equity_start": 281.155,
+    "losses": 0,
+    "net_pnl_usd": 0.0,
+    "open_positions": 2,
+    "rugs_skipped": 6,
+    "trades": 0,
+    "updated": "2026-11-18 08:02:08 PT",
+    "win_rate_pct": 0.0,
+    "wins": 0
   },
   "paper_candles": {
     "aviso": "SOLO PAPEL. Simulación, sin bróker ni órdenes reales.",
     "books": [
       {
         "capital": 100.0,
-        "equity": 100.0,
+        "equity": 101.7491,
         "scenario": "ZERO"
       },
       {
         "capital": 1000.0,
-        "equity": 1000.0,
+        "equity": 1017.4914,
         "scenario": "ZERO"
       },
       {
         "capital": 100.0,
-        "equity": 100.0,
+        "equity": 97.7822,
         "scenario": "IBKR"
       },
       {
         "capital": 1000.0,
-        "equity": 1000.0,
+        "equity": 1013.4624,
         "scenario": "IBKR"
       }
     ],
-    "day": "2026-11-16",
-    "equity_total": 2200.0,
+    "day": "2026-11-18",
+    "equity_total": 2230.4851,
     "running": true
   },
-  "updated": "2026-11-16 14:41:54 PT"
+  "updated": "2026-11-18 08:02:08 PT"
 }
