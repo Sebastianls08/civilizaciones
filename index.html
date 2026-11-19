@@ -96,6 +96,8 @@
   .lbl.ticker .pill b{color:#ffd27a;font-weight:700;font-size:10px;letter-spacing:.6px}
   .lbl.sel .pill{outline:2px solid var(--gold);outline-offset:2px}
   .lbl.royal .pill{background:linear-gradient(90deg,#fff3cf,#ffe39a);border-top-color:#ffe9b0}
+  .lbl.zone .pill{font-size:15.5px;padding:6px 14px 6px 11px}
+  .lbl.minor .pill{font-size:13px;padding:5px 11px 5px 9px}
 
   /* ---------- Card ---------- */
   #card{position:fixed;z-index:20;right:calc(16px + var(--sar));top:50%;width:350px;max-width:calc(100vw - 24px);max-height:62vh;overflow:auto;
@@ -151,6 +153,8 @@
     .lbl .sb{display:none}
     .lbl.agent .pill{font-size:11px;padding:3px 8px 3px 6px}
     .lbl.bld .pill{font-size:13px;padding:5px 10px 5px 8px}
+    .lbl.zone .pill{font-size:14px}
+    .lbl.minor .pill{font-size:12px;padding:4px 9px 4px 7px}
   }
   @media (max-height:520px) and (orientation:landscape){
     #goalBox{display:none}
@@ -306,6 +310,10 @@ const INFO = {
   casaValeria: { name: 'Casa de Valeria', civ: 'rp', role: 'Reclutadora', desc: 'La casa de Valeria, con su tablero de vacantes. Aquí prepara las publicaciones de empleo; el rey aprueba cada una antes de subirla.' },
   casaClarita: { name: 'Casa de Clarita', civ: 'ap', role: 'Día a Día', desc: 'La casa de Clarita, en el barrio de Apoyo. Aquí organiza las cosas del día a día.' },
   casaSofia: { name: 'Casa de Sofía', civ: 'ap', role: 'Apoyo', desc: 'La casa de Sofía, junto al jardín. Un lugar tranquilo para dar apoyo. Aquí no se muestra nada privado.' },
+  castillo: { name: 'Castillo del Rey', civ: 'centro', desc: 'El castillo del Rey Sebastian, detrás de la Plaza del Rey. Desde aquí el rey vigila todas las civilizaciones de la isla.' },
+  bodega: { name: 'Bodega RoyalOne', civ: 'rp', desc: 'La bodega de Royal Prestige, junto a la oficina. Aquí se guardan las cajas de las órdenes que Alberto arma y sigue en RoyalOne.' },
+  muelle: { name: 'Muelle', civ: 'centro', desc: 'El muelle al sur de la isla, donde amarra el barco del reino. Tomás camina hasta aquí desde la plaza cuando sale a cazar ofertas.' },
+  jardin: { name: 'Jardín de Sofía', civ: 'ap', desc: 'El jardín de Apoyo, con una banca y un corazón. Sofía pasea aquí; es un rincón tranquilo para descansar.' },
   casaCamila: { name: 'Casa de Camila', civ: 'ap', role: 'Finanzas personales', desc: 'La casa de Camila, en el barrio de Apoyo. Aquí lleva las finanzas personales del reino. Aquí no se muestran cifras privadas.' },
 };
 
@@ -390,31 +398,31 @@ renderer.toneMappingExposure = 1.05;
 $('#app').appendChild(renderer.domElement);
 
 const scene = new THREE.Scene();
-scene.fog = new THREE.Fog(0xf5d2ad, 110, 260);
+scene.fog = new THREE.Fog(0xf5d2ad, 160, 430);
 scene.background = new THREE.Color(0xf5d2ad);
-const camera = new THREE.PerspectiveCamera(42, window.innerWidth / window.innerHeight, 0.5, 900);
+const camera = new THREE.PerspectiveCamera(42, window.innerWidth / window.innerHeight, 1, 900);
 
 const controls = new OrbitControls(camera, renderer.domElement);
 controls.enableDamping = true; controls.dampingFactor = 0.06;
 controls.enablePan = false;
-controls.minDistance = 12; controls.maxDistance = 125;
+controls.minDistance = 14; controls.maxDistance = 200;
 controls.minPolarAngle = 0.25; controls.maxPolarAngle = 1.28;
 controls.rotateSpeed = 0.6; controls.zoomSpeed = 0.8;
 controls.autoRotate = true; controls.autoRotateSpeed = 0.25;
 
 // Luces: hora dorada
-const SUN_POS = new THREE.Vector3(-24, 24, 18);
+const SUN_POS = new THREE.Vector3(-40, 40, 30);
 scene.add(new THREE.HemisphereLight(0xffe7c4, 0x5f7f4a, 1.05));
 scene.add(new THREE.AmbientLight(0xfff0e0, 0.18));
 const sun = new THREE.DirectionalLight(0xffc387, 2.7);
 sun.position.copy(SUN_POS);
 sun.castShadow = true;
-sun.shadow.mapSize.set(1024, 1024);
-Object.assign(sun.shadow.camera, { left: -30, right: 30, top: 30, bottom: -30, near: 1, far: 110 });
+sun.shadow.mapSize.set(2048, 2048);
+Object.assign(sun.shadow.camera, { left: -48, right: 48, top: 48, bottom: -48, near: 1, far: 170 });
 sun.shadow.bias = -0.0006; sun.shadow.normalBias = 0.03;
 scene.add(sun);
 const rim = new THREE.DirectionalLight(0x9cc8ff, 0.75);
-rim.position.set(22, 12, -26); scene.add(rim);
+rim.position.set(36, 20, -42); scene.add(rim);
 
 // Cielo degradado con resplandor del sol
 const skyMat = new THREE.ShaderMaterial({
@@ -514,9 +522,9 @@ function register(root, id, ringR = 2) {
 }
 
 // ================= ISLA =================
-const R0 = 23;
+const R0 = 40;
 function shoreR(a) { return R0 * (1 + 0.085 * Math.sin(3 * a + 0.7) + 0.055 * Math.sin(5 * a + 2.1) + 0.03 * Math.sin(8 * a + 0.3)); }
-const NSEG = 72;
+const NSEG = 96;
 function islandShape(scale) {
   const s = new THREE.Shape();
   for (let i = 0; i < NSEG; i++) {
@@ -536,14 +544,14 @@ const dirtMat = M(0x9a6b45), sandMat = M(0xf1d6a2, { rough: 1 });
 slab(1.0, 1.1, -0.002, dirtMat, dirtMat);
 slab(1.13, 0.8, -0.33, sandMat, M(0xd9b98a));
 { // base rocosa bajo el agua
-  const g = new THREE.CylinderGeometry(R0 * 1.12, R0 * 0.5, 5, 20, 2);
+  const g = new THREE.CylinderGeometry(R0 * 1.12, R0 * 0.5, 5, 24, 2);
   const p = g.attributes.position;
   for (let i = 0; i < p.count; i++) { if (p.getY(i) < 2.4) { p.setX(i, p.getX(i) * (0.92 + rnd() * 0.16)); p.setZ(i, p.getZ(i) * (0.92 + rnd() * 0.16)); } }
   g.computeVertexNormals();
   const m = new THREE.Mesh(g, M(0x8d7766)); m.position.y = -3.6; scene.add(m);
 }
 { // césped con facetas y variación de color
-  const K = 9, pos = [], col = [], idx = [];
+  const K = 13, pos = [], col = [], idx = [];
   const greens = [0x7cc35a, 0x8fd06a, 0x6fb653, 0x9ad672, 0x84c75f].map((c) => new THREE.Color(c));
   const edge = new THREE.Color(0xb7cf6c), tmp = new THREE.Color();
   pos.push(0, 0.03, 0); col.push(greens[0].r, greens[0].g, greens[0].b);
@@ -574,7 +582,7 @@ slab(1.13, 0.8, -0.33, sandMat, M(0xd9b98a));
 
 // ================= AGUA =================
 const WATER_Y = -0.55;
-const waterGeo = new THREE.PlaneGeometry(320, 320, 96, 96); waterGeo.rotateX(-Math.PI / 2);
+const waterGeo = new THREE.PlaneGeometry(640, 640, 120, 120); waterGeo.rotateX(-Math.PI / 2);
 const wPos = waterGeo.attributes.position;
 const wBase = Float32Array.from(wPos.array);
 {
@@ -582,8 +590,8 @@ const wBase = Float32Array.from(wPos.array);
   for (let i = 0; i < wPos.count; i++) {
     const x = wPos.getX(i), z = wPos.getZ(i), a = Math.atan2(z, x);
     const d = Math.hypot(x, z) - shoreR(a) * 1.13;
-    if (d < 1.5) c.copy(foam).lerp(shallow, clamp(d / 1.5, 0, 1));
-    else c.copy(shallow).lerp(deep, clamp((d - 1.5) / 14, 0, 1));
+    if (d < 2.5) c.copy(foam).lerp(shallow, clamp(d / 2.5, 0, 1));
+    else c.copy(shallow).lerp(deep, clamp((d - 2.5) / 22, 0, 1));
     cols.push(c.r, c.g, c.b);
   }
   waterGeo.setAttribute('color', new THREE.Float32BufferAttribute(cols, 3));
@@ -591,9 +599,9 @@ const wBase = Float32Array.from(wPos.array);
 const water = new THREE.Mesh(waterGeo, new THREE.MeshStandardMaterial({ vertexColors: true, transparent: true, opacity: 0.86, roughness: 0.22, metalness: 0.1, flatShading: true }));
 water.position.y = WATER_Y; scene.add(water);
 { // fondo marino
-  const g = new THREE.CircleGeometry(170, 40); g.rotateX(-Math.PI / 2);
+  const g = new THREE.CircleGeometry(330, 48); g.rotateX(-Math.PI / 2);
   const p = g.attributes.position, cols = [], a = new THREE.Color(0xa6e3cf), b = new THREE.Color(0x1f6f88), c = new THREE.Color();
-  for (let i = 0; i < p.count; i++) { const r = Math.hypot(p.getX(i), p.getZ(i)); c.copy(a).lerp(b, clamp((r - 24) / 22, 0, 1)); cols.push(c.r, c.g, c.b); }
+  for (let i = 0; i < p.count; i++) { const r = Math.hypot(p.getX(i), p.getZ(i)); c.copy(a).lerp(b, clamp((r - R0 * 1.05) / 36, 0, 1)); cols.push(c.r, c.g, c.b); }
   g.setAttribute('color', new THREE.Float32BufferAttribute(cols, 3));
   const m = new THREE.Mesh(g, new THREE.MeshBasicMaterial({ vertexColors: true })); m.position.y = -3.2; scene.add(m);
 }
@@ -616,8 +624,8 @@ const clouds = new THREE.Group(); scene.add(clouds);
   const cm = new THREE.MeshStandardMaterial({ color: 0xfff6ee, emissive: 0xffe0c4, emissiveIntensity: 0.35, flatShading: true, roughness: 1 });
   const cg = new THREE.IcosahedronGeometry(1, 1);
   for (let i = 0; i < 7; i++) {
-    const c = new THREE.Group(), a = i / 7 * Math.PI * 2 + rnd() * 0.5, r = 48 + rnd() * 30;
-    c.position.set(Math.cos(a) * r, 15 + rnd() * 9, Math.sin(a) * r);
+    const c = new THREE.Group(), a = i / 7 * Math.PI * 2 + rnd() * 0.5, r = 80 + rnd() * 48;
+    c.position.set(Math.cos(a) * r, 24 + rnd() * 13, Math.sin(a) * r); c.scale.setScalar(1.45);
     const n = 3 + Math.floor(rnd() * 3);
     for (let j = 0; j < n; j++) {
       const s = new THREE.Mesh(cg, cm); const sc = 2.2 + rnd() * 2.4;
@@ -629,10 +637,15 @@ const clouds = new THREE.Group(); scene.add(clouds);
 
 // ================= DISTRITOS: posiciones =================
 const V = (x, z) => new THREE.Vector3(x, 0, z);
-const P = { rp: V(-12, -5.5), tr: V(12, -5.5), ag: V(10.5, 8.5), ap: V(-10.5, 8.5) };
+const P = { rp: V(-22, -12.5), tr: V(22, -12.5), ag: V(19, 17), ap: V(-19, 17) };
+const PLAZA_R = 6;
+// Territorios: un círculo por civilización, con suelo teñido, cerca y pórtico de entrada
+const TERR = {
+  centro: { c: V(0, -2), r: 13 }, rp: { c: P.rp, r: 9 }, tr: { c: P.tr, r: 9 }, ag: { c: P.ag, r: 9 }, ap: { c: P.ap, r: 9 },
+};
 function frame(p) { const f = V(-p.x, -p.z).normalize(); const r = V(-f.z, f.x); return { f, r, yaw: Math.atan2(f.x, f.z) }; }
 function local(p, rx, fz) { const { f, r } = frame(p); return p.clone().addScaledVector(r, rx).addScaledVector(f, fz); }
-function plazaPt(p, r = 4.2) { return V(p.x, p.z).normalize().multiplyScalar(r); }
+function plazaPt(p, r = PLAZA_R - 0.8) { return V(p.x, p.z).normalize().multiplyScalar(r); }
 function curveOut(a, b, amt) {
   const m = a.clone().add(b).multiplyScalar(0.5), d = b.clone().sub(a), n = V(-d.z, d.x).normalize();
   const m1 = m.clone().addScaledVector(n, amt), m2 = m.clone().addScaledVector(n, -amt);
@@ -647,7 +660,7 @@ function pathRibbon(curve, width = 1.15, n = 36) {
   const pts = curve.getSpacedPoints(n), pos = [], idx = [];
   for (let i = 0; i <= n; i++) {
     const p = pts[i], t = curve.getTangentAt(i / n), nx = -t.z, nz = t.x, w = width * (0.85 + rnd() * 0.3) / 2;
-    pos.push(p.x + nx * w, 0.085, p.z + nz * w, p.x - nx * w, 0.085, p.z - nz * w);
+    pos.push(p.x + nx * w, 0.13, p.z + nz * w, p.x - nx * w, 0.13, p.z - nz * w);
     if (i < n) { const a = i * 2; idx.push(a, a + 1, a + 2, a + 1, a + 3, a + 2); }
     pathSamples.push(p);
   }
@@ -655,30 +668,44 @@ function pathRibbon(curve, width = 1.15, n = 36) {
   const m = new THREE.Mesh(g, pathMat); m.receiveShadow = true; scene.add(m);
   return curve.getSpacedPoints(Math.max(4, Math.round(curve.getLength() / 1.2)));
 }
-const DOOR = { rp: local(P.rp, 0, 2.7), tr: local(P.tr, 0, 2.6), ag: local(P.ag, -0.2, 2.6), ap: local(P.ap, 0, 2.5) };
+const DOOR = { rp: local(P.rp, 0, 3.0), tr: local(P.tr, 0, 3.0), ag: local(P.ag, -0.2, 3.4), ap: local(P.ap, 0, 3.0) };
 const PATHS = {
-  rp: pathRibbon(curveBend(plazaPt(P.rp), DOOR.rp, 1.2)),
-  tr: pathRibbon(curveBend(plazaPt(P.tr), DOOR.tr, -1.2)),
-  ag: pathRibbon(curveBend(plazaPt(P.ag), DOOR.ag, 0.9)),
-  ap: pathRibbon(curveBend(plazaPt(P.ap), DOOR.ap, -0.9)),
-  rpap: pathRibbon(curveOut(DOOR.rp, DOOR.ap, 2.4), 1.0),
-  trag: pathRibbon(curveOut(DOOR.tr, DOOR.ag, 2.4), 1.0),
+  rp: pathRibbon(curveBend(plazaPt(P.rp), DOOR.rp, 1.6), 1.25, 48),
+  tr: pathRibbon(curveBend(plazaPt(P.tr), DOOR.tr, -1.6), 1.25, 48),
+  ag: pathRibbon(curveBend(plazaPt(P.ag), DOOR.ag, 1.2), 1.25, 48),
+  ap: pathRibbon(curveBend(plazaPt(P.ap), DOOR.ap, -1.2), 1.25, 48),
+  rpap: pathRibbon(curveOut(DOOR.rp, DOOR.ap, 3.2), 1.05, 56),
+  trag: pathRibbon(curveOut(DOOR.tr, DOOR.ag, 3.2), 1.05, 56),
 };
 const PIER_Z0 = shoreR(Math.PI / 2) * 0.96;
-pathRibbon(new THREE.QuadraticBezierCurve3(V(0, 4.4), V(0.3, (4.4 + PIER_Z0) / 2), V(0, PIER_Z0)), 1.2, 20);
+const PIER_PATH = pathRibbon(new THREE.QuadraticBezierCurve3(V(0, PLAZA_R - 0.6), V(0.4, (PLAZA_R - 0.6 + PIER_Z0) / 2), V(0, PIER_Z0)), 1.25, 40);
 
-function groundY(x, z) { const r = Math.hypot(x, z); return r < 4.85 ? 0.25 : r < 5.15 ? 0.25 - (r - 4.85) / 0.3 * 0.16 : 0.09; }
+function groundY(x, z) { const r = Math.hypot(x, z); return r < PLAZA_R - 0.15 ? 0.25 : r < PLAZA_R + 0.15 ? 0.25 - (r - PLAZA_R + 0.15) / 0.3 * 0.13 : 0.12; }
+
+// ================= TERRITORIOS: suelo, borde y cerca =================
+const GRASS = new THREE.Color(0x84c75f);
+const terrCol = (k, amt) => GRASS.clone().lerp(new THREE.Color(CIV[k].css), amt);
+// suelo de cada territorio: tinte suave del color de su civilización
+const FLOOR = { centro: 0xc6cf70, rp: 0xb9a8dc, tr: 0x86d0ac, ag: 0xe6bb80, ap: 0xebb8bf };
+const gateSpots = [];   // pórticos (se rellenan abajo) para abrir hueco en la cerca
+for (const k of Object.keys(TERR)) {
+  const T = TERR[k];
+  const disc = new THREE.Mesh(new THREE.CircleGeometry(T.r, 40), new THREE.MeshStandardMaterial({ color: FLOOR[k], flatShading: true, roughness: 0.95 }));
+  disc.rotation.x = -Math.PI / 2; disc.position.set(T.c.x, 0.085, T.c.z); disc.receiveShadow = true; scene.add(disc);
+  const ring = new THREE.Mesh(new THREE.RingGeometry(T.r - 0.55, T.r + 0.12, 64), new THREE.MeshStandardMaterial({ color: terrCol(k, 0.72), flatShading: true, roughness: 0.9 }));
+  ring.rotation.x = -Math.PI / 2; ring.position.set(T.c.x, 0.1, T.c.z); ring.receiveShadow = true; scene.add(ring);
+}
 
 // ================= PLAZA DEL REY =================
 const plaza = new THREE.Group(); scene.add(plaza);
 const stone = M(0xe6d6b6), stone2 = M(0xd8bf8e), gold = M(0xf2c14e, { metal: 0.55, rough: 0.35 });
 {
-  const base = mesh(CYL(5, 5.25, 0.25, 8), stone, 0, 0.125, 0, plaza); base.rotation.y = Math.PI / 8;
-  const inner = mesh(CYL(3.3, 3.3, 0.02, 8), stone2, 0, 0.26, 0, plaza); inner.rotation.y = Math.PI / 8;
+  const base = mesh(CYL(PLAZA_R, PLAZA_R + 0.25, 0.25, 8), stone, 0, 0.125, 0, plaza); base.rotation.y = Math.PI / 8;
+  const inner = mesh(CYL(4.0, 4.0, 0.02, 8), stone2, 0, 0.26, 0, plaza); inner.rotation.y = Math.PI / 8;
   mesh(CYL(1.65, 1.8, 0.3, 8), M(0xcfb98f), 0, 0.4, 0, plaza);
   mesh(CYL(1.2, 1.3, 0.25, 8), M(0xe9c46a, { rough: 0.6 }), 0, 0.675, 0, plaza);
   const ring = mesh(new THREE.TorusGeometry(1.66, 0.04, 4, 24), gold, 0, 0.55, 0, plaza); ring.rotation.x = Math.PI / 2;
-  mesh(BOX(1.2, 0.03, 3.3), M(0xb3283a), 0, 0.265, 3.1, plaza);
+  mesh(BOX(1.2, 0.03, 4.2), M(0xb3283a), 0, 0.265, 3.75, plaza);
   mesh(BOX(0.85, 0.35, 0.6), M(0xa52a3a), 0, 0.97, -0.55, plaza);
   mesh(BOX(0.95, 1.4, 0.16), gold, 0, 1.5, -0.86, plaza);
   mesh(BOX(0.7, 1.05, 0.04), M(0xa52a3a), 0, 1.45, -0.77, plaza);
@@ -687,18 +714,18 @@ const stone = M(0xe6d6b6), stone2 = M(0xd8bf8e), gold = M(0xf2c14e, { metal: 0.5
   // bancos y faroles
   const ang = [Math.PI * 0.25, Math.PI * 0.75, Math.PI * 1.25, Math.PI * 1.75];
   for (const a of ang) {
-    const x = Math.cos(a) * 4.3, z = Math.sin(a) * 4.3;
+    const x = Math.cos(a) * 5.2, z = Math.sin(a) * 5.2;
     mesh(CYL(0.05, 0.06, 1.4, 6), M(0x4a3a30), x, 0.95, z, plaza);
     mesh(new THREE.IcosahedronGeometry(0.16, 0), M(0xffd28a, { emissive: 0xffb050, ei: 1.4 }), x, 1.72, z, plaza);
   }
   // estandartes hacia cada civilización
   for (const k of ['rp', 'tr', 'ag', 'ap']) {
     const a = Math.atan2(P[k].z, P[k].x) + 0.42, col = { rp: 0x7c4dcc, tr: 0x1fae9a, ag: 0xff7a59, ap: 0xf09aae }[k];
-    flag(plaza, Math.cos(a) * 4.6, 0.25, Math.sin(a) * 4.6, col, 2.0);
+    flag(plaza, Math.cos(a) * 5.5, 0.25, Math.sin(a) * 5.5, col, 2.0);
   }
   // castillo
-  const castle = new THREE.Group(); castle.position.set(0, 0, -9.2); plaza.add(castle);
-  mesh(CYL(4.3, 5.2, 0.6, 10), M(0x86c464), 0, 0.3, 0, castle);
+  const castle = new THREE.Group(); castle.position.set(0, 0, -10.2); castle.scale.setScalar(1.2); plaza.add(castle);
+  mesh(CYL(3.4, 3.8, 0.6, 10), M(0x86c464), 0, 0.3, 0, castle);
   const cs = M(0xeadcbf), cs2 = M(0xd8c6a2), roofG = M(0xe0a93b, { rough: 0.55, metal: 0.2 });
   mesh(BOX(5.2, 1.7, 1.1), cs, 0, 1.45, 0.2, castle);
   for (let i = -2; i <= 2; i++) mesh(BOX(0.45, 0.35, 1.15), cs2, i * 1.15, 2.45, 0.2, castle);
@@ -713,8 +740,12 @@ const stone = M(0xe6d6b6), stone2 = M(0xd8bf8e), gold = M(0xf2c14e, { metal: 0.5
   }
   for (const sx of [-0.55, 0.55]) mesh(BOX(0.35, 0.5, 0.05), M(0xffd28a, { emissive: 0xffb050, ei: 1.1 }), sx, 2.6, 0.52, castle);
   flag(castle, 0, 5.0, -0.5, 0xf2c14e, 1.4);
-  register(plaza, 'plaza', 5.4);
-  const anchor = new THREE.Object3D(); anchor.position.set(0, 6.9, -9.7); plaza.add(anchor); plaza.userData.anchor = anchor;
+  // letrero del castillo, sobre las almenas
+  mesh(BOX(2.75, 0.84, 0.1), M(0xb8862a), 0, 3.12, 0.78, castle);
+  const cSign = signMesh(signTexture('Castillo del Rey', 'Rey Sebastian', '#7a2333', '#561626', '#ffd77a', 512, 154), 2.6, 0.78); cSign.position.set(0, 3.12, 0.84); castle.add(cSign);
+  anchorAt(castle, 6.1); register(castle, 'castillo', 5.2);
+  register(plaza, 'plaza', 6.4);
+  const anchor = new THREE.Object3D(); anchor.position.set(0, 2.3, PLAZA_R - 0.4); plaza.add(anchor); plaza.userData.anchor = anchor;
 }
 
 // ================= CONSTRUCTOR DE CASAS =================
@@ -757,6 +788,9 @@ function anchorAt(g, y) { const a = new THREE.Object3D(); a.position.y = y; g.ad
   mesh(roofGeo(2, 2, 0.9), M(0x9a7bd6), 0, 1.95, 0, b);
   mesh(BOX(0.9, 1, 0.05), M(0x7a6290), 0, 0.5, 1.01, b);
   for (let i = 0; i < 3; i++) mesh(BOX(0.45, 0.45, 0.45), M(0xc99a63), 1.3 + (i % 2) * 0.1, 0.23 + Math.floor(i / 2) * 0.45, 0.6 - (i % 2) * 0.55, b);
+  mesh(BOX(1.86, 0.53, 0.05), M(0x7a6290), 0, 1.24, 1.02, b);
+  const bs = signMesh(signTexture('Bodega', 'RoyalOne', '#9a7bd6', '#6a4fae', '#fff8e6', 560, 150), 1.76, 0.47); bs.position.set(0, 1.24, 1.055); b.add(bs);
+  anchorAt(b, 3.0); register(b, 'bodega', 1.9);
   flag(g, 1.9, 2.65, -1.2, 0x7c4dcc);
   place(g, P.rp); anchorAt(g, 5.0); register(g, 'rpOffice', 3.6);
 }
@@ -794,6 +828,7 @@ let antennaMat = null, dish = null;
   scr.position.set(0, 3.3, 1.16); g.add(scr);
   mesh(BOX(2.1, 1.36, 0.06), M(0x0d3d38), 0, 3.3, 1.13, g);
   mesh(BOX(0.78, 1.25, 0.08), M(0x0f4f48), 0, 0.87, 1.42, g);
+  const ts = signMesh(signTexture('Estudio de Trading', 'SOLO PAPEL', '#1f9e8f', '#0f6f64', '#eafff8', 600, 146), 2.3, 0.56); ts.position.set(0, 2.03, 1.45); g.add(ts);
   const tw = M(0xbffcef, { emissive: 0x5ef2c9, ei: 0.7 });
   for (const sx of [-1, 1]) { mesh(BOX(0.06, 0.6, 0.9), tw, sx * 1.42, 1.5, 0, g); mesh(BOX(0.7, 0.55, 0.06), tw, sx * 0.95, 1.45, 1.42, g); }
   for (const [x, z] of [[-1.25, -1.25], [1.25, -1.25], [-1.25, 1.25], [1.25, 1.25]]) mesh(CYL(0.04, 0.04, 0.5, 5), M(0xe8fff9), x, 4.5, z, g);
@@ -815,9 +850,9 @@ let antennaMat = null, dish = null;
 const agF = frame(P.ag);
 // posiciones en el marco del distrito (rx: lateral, fz: hacia la plaza)
 const AG_HOUSES = {
-  explorador: { rx: -4.0, fz: 0.5, turn: -0.3 },
-  constructor: { rx: 0.0, fz: -2.0, turn: 0 },
-  finanzas: { rx: 4.0, fz: 0.5, turn: 0.3 },
+  explorador: { rx: -5.5, fz: 0.8, turn: -0.3 },
+  constructor: { rx: 0.0, fz: -3.5, turn: 0 },
+  finanzas: { rx: 5.5, fz: 0.8, turn: 0.3 },
 };
 const AG_LOOPS = {};
 function placeAg(g, h, loopRx, loopRz) {
@@ -838,7 +873,7 @@ let spark = null, gear2 = null, agLight = null, agRing = null, agGlow = null, sp
   const wm = M(0xffe0a0, { emissive: 0xffa050, ei: 1.5, rough: 0.4 });
   mesh(BOX(0.32, 0.46, 0.06), wm, 0, 2.45, 0.77, g);
   mesh(BOX(0.28, 0.4, 0.06), wm, 0, 3.75, 0.72, g);
-  const sg = signMesh(signTexture('ATALAYA', 'Marco', '#ff7a59', '#e0553a', '#fff4e6'), 1.1, 0.36); sg.position.set(0, 1.58, 0.92); g.add(sg);
+  const sg = signMesh(signTexture('ATALAYA', 'Casa del Explorador · Marco', '#ff7a59', '#e0553a', '#fff4e6'), 1.1, 0.36); sg.position.set(0, 1.58, 0.92); g.add(sg);
   // mirador
   const deck = mesh(CYL(1.15, 1.0, 0.25, 8), terra, 0, 4.78, 0, g); deck.rotation.y = Math.PI / 8;
   for (let i = 0; i < 8; i++) { const a = i / 8 * Math.PI * 2 + Math.PI / 8; mesh(CYL(0.035, 0.035, 0.42, 5), wood, Math.sin(a) * 1.04, 5.11, Math.cos(a) * 1.04, g); }
@@ -851,7 +886,7 @@ let spark = null, gear2 = null, agLight = null, agRing = null, agGlow = null, sp
   mesh(CYL(0.05, 0.08, 0.75, 8), M(0xd9a441, { metal: 0.6, rough: 0.35 }), 0, 0, 0, scope);
   mesh(CYL(0.085, 0.085, 0.08, 8), M(0x3a2a22), 0, 0.38, 0, scope);
   flag(g, 0, 6.95, 0, 0xff7a59, 1.1);
-  AG_LOOPS.explorador = placeAg(g, AG_HOUSES.explorador, 1.75, 1.75);
+  AG_LOOPS.explorador = placeAg(g, AG_HOUSES.explorador, 2.0, 2.0);
   anchorAt(g, 8.4); register(g, 'casaExplorador', 1.8);
 }
 { // Casa del Constructor: taller
@@ -879,7 +914,7 @@ let spark = null, gear2 = null, agLight = null, agRing = null, agGlow = null, sp
   mesh(BOX(0.24, 0.16, 0.3), M(0x3b3f4a), 0, 0.84, -0.35, bench);
   mesh(BOX(0.05, 0.05, 0.36), M(0xb8c2c8, { metal: 0.6, rough: 0.35 }), 0.05, 0.79, 0.25, bench);
   mesh(BOX(0.12, 0.08, 0.08), M(0xf2913d), 0.05, 0.8, 0.43, bench);
-  AG_LOOPS.constructor = placeAg(g, AG_HOUSES.constructor, 2.6, 2.1);
+  AG_LOOPS.constructor = placeAg(g, AG_HOUSES.constructor, 2.8, 2.3);
   anchorAt(g, 5.3); register(g, 'casaConstructor', 2.9);
 }
 { // Casa de Finanzas: tesorería
@@ -906,13 +941,13 @@ let spark = null, gear2 = null, agLight = null, agRing = null, agGlow = null, sp
   for (const sx of [-1, 1]) mesh(BOX(0.06, 0.6, 0.5), wm, sx * 1.42, 1.4, -0.1, g);
   // monedas apiladas
   for (const [x, n] of [[-1.38, 4], [1.38, 3]]) for (let i = 0; i < n; i++) mesh(CYL(0.12, 0.12, 0.045, 10), goldM, x + (i % 2) * 0.02, 0.28 + i * 0.05, 1.18, g);
-  AG_LOOPS.finanzas = placeAg(g, AG_HOUSES.finanzas, 2.15, 2.0);
+  AG_LOOPS.finanzas = placeAg(g, AG_HOUSES.finanzas, 2.4, 2.2);
   anchorAt(g, 4.6); register(g, 'casaFinanzas', 2.4);
 }
 { // poste de bienvenida con flechas hacia cada casa + senderos de piedra
-  const g = new THREE.Group(); g.position.copy(local(P.ag, -1.5, 3.2)); g.rotation.y = agF.yaw; scene.add(g);
+  const g = new THREE.Group(); g.position.copy(local(P.ag, -1.7, 3.6)); g.rotation.y = agF.yaw; scene.add(g);
   mesh(CYL(0.07, 0.09, 2.6, 6), M(0x7a5a3c), 0, 1.3, 0, g);
-  const sg = signMesh(signTexture('AGENCIA IA', null, '#ff7a59', '#e0553a', '#fff4e6'), 1.3, 0.38); sg.position.set(0, 2.45, 0.09); g.add(sg);
+  const sg = signMesh(signTexture('Casas', 'Marco · Diego · Lupita', '#ff7a59', '#e0553a', '#fff4e6', 512, 150), 1.3, 0.38); sg.position.set(0, 2.45, 0.09); g.add(sg);
   mesh(BOX(1.34, 0.42, 0.05), M(0xe0553a), 0, 2.45, 0.04, g);
   const arrows = [[0xff7a59, 1.95, AG_HOUSES.explorador], [0xffa94d, 1.6, AG_HOUSES.constructor], [0xf2c14e, 1.25, AG_HOUSES.finanzas]];
   for (const [col, y, h] of arrows) {
@@ -923,8 +958,8 @@ let spark = null, gear2 = null, agLight = null, agRing = null, agGlow = null, sp
   }
   anchorAt(g, 3.0); register(g, 'agStudio', 1.2);
   // senderos de piedra desde la entrada hasta cada puerta
-  const stoneM = M(0xd9bf94), hub = local(P.ag, -0.2, 2.4);
-  const doors = [local(P.ag, -3.4, 1.9), local(P.ag, 0, 0.0), local(P.ag, 3.4, 2.0)];
+  const stoneM = M(0xd9bf94), hub = local(P.ag, -0.2, 3.0);
+  const doors = [local(P.ag, -4.9, 2.1), local(P.ag, 0, -1.6), local(P.ag, 4.9, 2.1)];
   const sgeo = CYL(0.24, 0.27, 0.06, 7);
   for (const d of doors) {
     const n = Math.max(2, Math.round(hub.distanceTo(d) / 0.6));
@@ -932,36 +967,44 @@ let spark = null, gear2 = null, agLight = null, agRing = null, agGlow = null, sp
   }
   // jardincitos entre casas
   const hedge = M(0x5fae4e), bloom = [M(0xff8fb1), M(0xffe066), M(0xff9a6b)];
-  for (const [rx, fz] of [[-1.9, 1.1], [1.7, 1.25]]) {
+  for (const [rx, fz] of [[-3.2, -1.6], [3.2, -1.6], [-6.4, 4.0], [6.4, 4.0]]) {
     const p = local(P.ag, rx, fz);
     const h = mesh(new THREE.IcosahedronGeometry(0.38, 0), hedge, p.x, 0.25, p.z); h.scale.set(1, 0.7, 1); scene.add(h);
     for (let i = 0; i < 3; i++) { const a = i * 2.1 + rx; scene.add(mesh(new THREE.IcosahedronGeometry(0.09, 0), bloom[i], p.x + Math.cos(a) * 0.5, 0.15, p.z + Math.sin(a) * 0.5)); }
   }
 }
 { // brillo pulsante del distrito
-  const c = P.ag.clone().addScaledVector(agF.f, 0.6);
-  agRing = new THREE.Mesh(new THREE.RingGeometry(6.3, 6.8, 64), new THREE.MeshBasicMaterial({ color: 0xff8a5a, transparent: true, opacity: 0.3, depthWrite: false, side: THREE.DoubleSide }));
+  const c = P.ag.clone();
+  agRing = new THREE.Mesh(new THREE.RingGeometry(TERR.ag.r - 1.35, TERR.ag.r - 0.95, 64), new THREE.MeshBasicMaterial({ color: 0xff8a5a, transparent: true, opacity: 0.3, depthWrite: false, side: THREE.DoubleSide }));
   agRing.rotation.x = -Math.PI / 2; agRing.position.set(c.x, 0.11, c.z); scene.add(agRing);
   const gc = document.createElement('canvas'); gc.width = gc.height = 128; const x = gc.getContext('2d');
   const gr = x.createRadialGradient(64, 64, 0, 64, 64, 64); gr.addColorStop(0, 'rgba(255,170,110,.75)'); gr.addColorStop(1, 'rgba(255,140,90,0)');
   x.fillStyle = gr; x.fillRect(0, 0, 128, 128);
   const gt = new THREE.CanvasTexture(gc); gt.colorSpace = THREE.SRGBColorSpace;
-  agGlow = new THREE.Mesh(new THREE.PlaneGeometry(15, 15), new THREE.MeshBasicMaterial({ map: gt, transparent: true, depthWrite: false, blending: THREE.AdditiveBlending, opacity: 0.45 }));
+  agGlow = new THREE.Mesh(new THREE.PlaneGeometry(19, 19), new THREE.MeshBasicMaterial({ map: gt, transparent: true, depthWrite: false, blending: THREE.AdditiveBlending, opacity: 0.45 }));
   agGlow.rotation.x = -Math.PI / 2; agGlow.position.set(c.x, 0.12, c.z); scene.add(agGlow);
-  agLight = new THREE.PointLight(0xff8a50, 26, 20, 2); agLight.position.set(c.x, 3.6, c.z); scene.add(agLight);
+  agLight = new THREE.PointLight(0xff8a50, 26, 24, 2); agLight.position.set(c.x, 3.6, c.z); scene.add(agLight);
   // chispas
   const sc = document.createElement('canvas'); sc.width = sc.height = 32; const sx = sc.getContext('2d');
   const sg = sx.createRadialGradient(16, 16, 0, 16, 16, 16); sg.addColorStop(0, 'rgba(255,255,255,1)'); sg.addColorStop(0.4, 'rgba(255,200,140,.8)'); sg.addColorStop(1, 'rgba(255,160,100,0)');
   sx.fillStyle = sg; sx.fillRect(0, 0, 32, 32);
   const N = 46, sp = new Float32Array(N * 3), seeds = [];
-  for (let i = 0; i < N; i++) { const a = rnd() * Math.PI * 2, r = rnd() * 6.0; sp[i * 3] = c.x + Math.cos(a) * r; sp[i * 3 + 1] = rnd() * 6; sp[i * 3 + 2] = c.z + Math.sin(a) * r; seeds.push(0.4 + rnd() * 0.8); }
+  for (let i = 0; i < N; i++) { const a = rnd() * Math.PI * 2, r = rnd() * 7.4; sp[i * 3] = c.x + Math.cos(a) * r; sp[i * 3 + 1] = rnd() * 6; sp[i * 3 + 2] = c.z + Math.sin(a) * r; seeds.push(0.4 + rnd() * 0.8); }
   const sgeo = new THREE.BufferGeometry(); sgeo.setAttribute('position', new THREE.BufferAttribute(sp, 3));
   sparkles = new THREE.Points(sgeo, new THREE.PointsMaterial({ size: 0.32, map: new THREE.CanvasTexture(sc), transparent: true, depthWrite: false, blending: THREE.AdditiveBlending, color: 0xffc08a }));
   sparkles.userData.seeds = seeds; scene.add(sparkles);
 }
+// Letrero en poste (low-poly): tablero de color + letrero legible
+function postSign(parent, x, z, tex, w, h, postH, board, ry = 0) {
+  const p = new THREE.Group(); p.position.set(x, 0, z); p.rotation.y = ry; parent.add(p);
+  mesh(CYL(0.05, 0.07, postH, 6), M(0x7a5a3c), 0, postH / 2, -0.04, p);
+  mesh(BOX(w + 0.12, h + 0.12, 0.05), M(board), 0, postH, -0.01, p);
+  const sg = signMesh(tex, w, h); sg.position.set(0, postH, 0.02); p.add(sg);
+  return p;
+}
 // ---------- Apoyo
 const smoke = [];
-const GARDEN = local(P.ap, 2.9, 0.9);
+const GARDEN = local(P.ap, 4.5, 1.8);
 {
   const g = house({ w: 3.4, d: 2.8, h: 1.85, wall: 0xffdcc6, roof: 0xe58b9c, trim: 0xfff4ea, door: 0xb86b78, roofH: 1.7, base: 0xe8cdb6 });
   mesh(BOX(0.45, 1.1, 0.45), M(0xc9a08c), 0.9, 3.0, -0.5, g);
@@ -971,6 +1014,7 @@ const GARDEN = local(P.ap, 2.9, 0.9);
   mesh(CYL(0.05, 0.06, 1.5, 6), M(0x4a3a30), 1.4, 0.75, 2.0, g);
   mesh(new THREE.IcosahedronGeometry(0.15, 0), M(0xffd8a0, { emissive: 0xffb060, ei: 1.5 }), 1.4, 1.6, 2.0, g);
   flag(g, -1.3, 2.1, -1.0, 0xf09aae, 1.4);
+  postSign(g, -1.55, 2.05, signTexture('Casita de Apoyo', 'día a día', '#f6aabb', '#e0839a', '#fffafc', 512, 150), 1.3, 0.38, 1.25, 0xe0839a);
   place(g, P.ap); anchorAt(g, 4.9); register(g, 'apCottage', 3.0);
   g.updateMatrixWorld(true);
   const top = new THREE.Vector3(0.9, 3.6, -0.5); g.localToWorld(top);
@@ -991,6 +1035,8 @@ const GARDEN = local(P.ap, 2.9, 0.9);
   mesh(CYL(0.04, 0.05, 1.2, 6), M(0x6b4a33), 1.2, 0.6, 0.2, g);
   const heart = mesh(hg, M(0xf27a98, { emissive: 0xf05a80, ei: 0.35 }), 1.2, 1.4, 0.2, g); g.userData.heart = heart;
   smoke.heart = heart;
+  postSign(g, -1.25, 0.55, signTexture('Jardín', 'de Sofía', '#f27a98', '#d4566f', '#fffafc', 512, 150), 1.0, 0.3, 1.05, 0xd4566f, 0.35);
+  anchorAt(g, 2.6); register(g, 'jardin', 2.4);
 }
 
 // ---------- Casas de los bots: una casita con letrero por persona
@@ -1004,19 +1050,19 @@ function botHouse(o) {
   const sg = signMesh(signTexture(o.title, o.sub, o.bg1, o.bg2, o.fg), 1.5, 0.47); sg.position.set(0, sy, sz); g.add(sg);
   if (o.detail) o.detail(g, { w, d, h, rh });
   place(g, o.pos, o.yawOff ?? 0); anchorAt(g, 0.25 + h + rh + 0.75); register(g, o.id, 2.0);
-  botHomeZones.push({ x: o.pos.x, z: o.pos.z, r: 2.0 });
+  botHomeZones.push({ x: o.pos.x, z: o.pos.z, r: 2.6 });
   return g;
 }
 const postM = M(0x7a5a3c);
 // Pedro: azul marino y oro, gema JARVIS en el techo
-botHouse({ id: 'casaPedro', pos: V(7.2, 3.0), wall: 0xf4ecdc, roof: 0x2e4a7a, trim: 0xf5c86a, door: 0x2a3a5c,
+botHouse({ id: 'casaPedro', pos: V(10.5, 0.5), wall: 0xf4ecdc, roof: 0x2e4a7a, trim: 0xf5c86a, door: 0x2a3a5c,
   title: 'Pedro', sub: 'Consejero · JARVIS', bg1: '#2e4a7a', bg2: '#1f3358', fg: '#f5c86a',
   detail: (g, { w, h, rh }) => {
     mesh(new THREE.OctahedronGeometry(0.17, 0), M(0xf5c86a, { metal: 0.55, rough: 0.35, emissive: 0xffb050, ei: 0.5 }), 0, 0.32 + h + rh + 0.15, 0, g);
     flag(g, -(w / 2 + 0.35), 0.05, -0.4, 0x2e4a7a, 1.5);
   } });
 // Carlos (clave camila): rosa, claqueta de guion junto a la puerta
-botHouse({ id: 'casaCarlos', pos: V(-7.2, 3.0), wall: 0xfff0f2, roof: 0xf07a92, trim: 0xffd6de, door: 0x9a3a52,
+botHouse({ id: 'casaCarlos', pos: V(-10.5, 0.5), wall: 0xfff0f2, roof: 0xf07a92, trim: 0xffd6de, door: 0x9a3a52,
   title: 'Carlos', sub: 'Guionista', bg1: '#f07a92', bg2: '#d4566f', fg: '#fff6f2',
   detail: (g, { w, d }) => {
     const c = new THREE.Group(); c.position.set(w / 2 + 0.4, 0.09, d / 2 - 0.1); c.rotation.y = -0.4; g.add(c);
@@ -1026,7 +1072,7 @@ botHouse({ id: 'casaCarlos', pos: V(-7.2, 3.0), wall: 0xfff0f2, roof: 0xf07a92, 
     mesh(CYL(0.015, 0.025, 0.4, 5), M(0xf2c14e), -0.12, 0.47, 0.06, c).rotation.z = -0.5;
   } });
 // Tomás: naranja, lupa en un poste y etiqueta de precio
-botHouse({ id: 'casaTomas', pos: V(3.6, 8.6), wall: 0xfff1e4, roof: 0xe8834f, trim: 0xffd2a8, door: 0x8a4a2e,
+botHouse({ id: 'casaTomas', pos: V(3.8, 8.4), wall: 0xfff1e4, roof: 0xe8834f, trim: 0xffd2a8, door: 0x8a4a2e,
   title: 'Tomás', sub: 'Cazador de ofertas', bg1: '#e8834f', bg2: '#c8622f', fg: '#fff6ea',
   detail: (g, { w }) => {
     mesh(CYL(0.04, 0.05, 1.2, 6), postM, w / 2 + 0.45, 0.6, 0.3, g);
@@ -1035,7 +1081,7 @@ botHouse({ id: 'casaTomas', pos: V(3.6, 8.6), wall: 0xfff1e4, roof: 0xe8834f, tr
     mesh(BOX(0.04, 0.24, 0.36), M(0xffd23f), -(w / 2 + 0.05), 1.15, 0.55, g).rotation.x = 0.25;
   } });
 // Rita: turquesa, antena y pantallita con gráfica junto al Estudio de Trading
-botHouse({ id: 'casaRita', pos: local(P.tr, 4.4, 0.6), wall: 0xe8fff9, roof: 0x2fc7b0, trim: 0x1f9e8f, door: 0x0f4f48,
+botHouse({ id: 'casaRita', pos: local(P.tr, 5.5, 0), wall: 0xe8fff9, roof: 0x2fc7b0, trim: 0x1f9e8f, door: 0x0f4f48,
   title: 'Rita', sub: 'Trader', bg1: '#2fc7b0', bg2: '#1a9a88', fg: '#f2fffb',
   detail: (g, { w, h, rh }) => {
     mesh(CYL(0.03, 0.04, 1.0, 5), M(0xd0d8d8, { metal: 0.6, rough: 0.4 }), -0.4, 0.32 + h + rh * 0.5 + 0.4, -0.25, g);
@@ -1045,7 +1091,7 @@ botHouse({ id: 'casaRita', pos: local(P.tr, 4.4, 0.6), wall: 0xe8fff9, roof: 0x2
     for (const [i, bh] of [[0, 0.1], [1, 0.18], [2, 0.13], [3, 0.26]]) mesh(BOX(0.08, bh, 0.02), M(0x5ef2c9, { emissive: 0x5ef2c9, ei: 1.2 }), w / 2 + 0.24 + i * 0.12, 0.9 + bh / 2, 0.385, g);
   } });
 // Juan: morado, buzón de postventa y referidos
-botHouse({ id: 'casaJuan', pos: local(P.rp, 6.4, 0.8), wall: 0xf6ecdc, roof: 0xa77bf0, trim: 0xe0b44c, door: 0x4b2a7a,
+botHouse({ id: 'casaJuan', pos: local(P.rp, 7, 2), wall: 0xf6ecdc, roof: 0xa77bf0, trim: 0xe0b44c, door: 0x4b2a7a,
   title: 'Juan', sub: 'Postventa Royal', bg1: '#a77bf0', bg2: '#7c4dcc', fg: '#fff8e6',
   detail: (g, { w, d }) => {
     mesh(CYL(0.035, 0.04, 0.8, 5), postM, w / 2 + 0.4, 0.45, d / 2, g);
@@ -1053,7 +1099,7 @@ botHouse({ id: 'casaJuan', pos: local(P.rp, 6.4, 0.8), wall: 0xf6ecdc, roof: 0xa
     mesh(BOX(0.03, 0.2, 0.08), M(0xf2c14e), w / 2 + 0.55, 1.12, d / 2 + 0.1, g);
   } });
 // Alberto: morado y oro, cajas de órdenes con su portapapeles
-botHouse({ id: 'casaAlberto', pos: local(P.rp, -6.5, 1.6), wall: 0xf3ecfb, roof: 0x7c4dcc, trim: 0xf2c94c, door: 0x4b2a7a,
+botHouse({ id: 'casaAlberto', pos: local(P.rp, -7, 1), wall: 0xf3ecfb, roof: 0x7c4dcc, trim: 0xf2c94c, door: 0x4b2a7a,
   title: 'Alberto', sub: 'Órdenes', bg1: '#7c4dcc', bg2: '#5a2fa0', fg: '#ffd77a',
   detail: (g, { w, d }) => {
     const cm = M(0xc99a63);
@@ -1064,7 +1110,7 @@ botHouse({ id: 'casaAlberto', pos: local(P.rp, -6.5, 1.6), wall: 0xf3ecfb, roof:
     mesh(BOX(0.17, 0.035, 0.22), M(0xffffff), w / 2 + 0.4, 0.56, d / 2 - 0.2, g);
   } });
 // Valeria: morado oscuro, tablero de vacantes y megáfono
-botHouse({ id: 'casaValeria', pos: local(P.rp, 4.4, -3.3), wall: 0xefe6fb, roof: 0x5a2fa0, trim: 0xe8d8ff, door: 0x3a1e6a,
+botHouse({ id: 'casaValeria', pos: local(P.rp, 4.5, -5), wall: 0xefe6fb, roof: 0x5a2fa0, trim: 0xe8d8ff, door: 0x3a1e6a,
   title: 'Valeria', sub: 'Reclutadora', bg1: '#5a2fa0', bg2: '#3e1f75', fg: '#f2e8ff',
   detail: (g, { w }) => {
     const x = -(w / 2 + 0.5);
@@ -1076,7 +1122,7 @@ botHouse({ id: 'casaValeria', pos: local(P.rp, 4.4, -3.3), wall: 0xefe6fb, roof:
     const mg = mesh(new THREE.ConeGeometry(0.11, 0.26, 8, 1, true), M(0xe8d8ff, { double: true }), 0, 0.42, 0, b); mg.rotation.z = Math.PI / 2;
   } });
 // Clarita: durazno, tendedero del día a día
-botHouse({ id: 'casaClarita', pos: local(P.ap, -4.5, 0.5), wall: 0xffe2cc, roof: 0xf2a07a, trim: 0xfff6ec, door: 0xb8704e,
+botHouse({ id: 'casaClarita', pos: local(P.ap, -6.5, 0.5), wall: 0xffe2cc, roof: 0xf2a07a, trim: 0xfff6ec, door: 0xb8704e,
   title: 'Clarita', sub: 'Día a Día', bg1: '#ffb38a', bg2: '#f08e62', fg: '#fffaf2',
   detail: (g, { w }) => {
     const x = w / 2 + 0.45;
@@ -1085,7 +1131,7 @@ botHouse({ id: 'casaClarita', pos: local(P.ap, -4.5, 0.5), wall: 0xffe2cc, roof:
     for (const [z, c] of [[-0.35, 0xff8fb1], [0.05, 0xffe066], [0.42, 0x8fd0ff]]) mesh(BOX(0.04, 0.3, 0.26), M(c), x, 0.98, z, g);
   } });
 // Sofía: rosa suave, corazoncito junto a la puerta
-botHouse({ id: 'casaSofia', pos: local(P.ap, 6.3, -1.6), wall: 0xfff0f4, roof: 0xf6aabb, trim: 0xffffff, door: 0xc0687e,
+botHouse({ id: 'casaSofia', pos: local(P.ap, 6, -3.5), wall: 0xfff0f4, roof: 0xf6aabb, trim: 0xffffff, door: 0xc0687e,
   title: 'Sofía', sub: 'Apoyo', bg1: '#f6aabb', bg2: '#e88aa0', fg: '#fffafc',
   detail: (g, { w, d }) => {
     const hs = new THREE.Shape(); hs.moveTo(0, -0.12);
@@ -1095,7 +1141,7 @@ botHouse({ id: 'casaSofia', pos: local(P.ap, 6.3, -1.6), wall: 0xfff0f4, roof: 0
     mesh(new THREE.ExtrudeGeometry(hs, { depth: 0.05, bevelEnabled: false, curveSegments: 3 }), M(0xf27a98, { emissive: 0xf05a80, ei: 0.35 }), w / 2 + 0.35, 1.0, d / 2, g);
   } });
 // Camila (clave andres): verde, monedas y libro de cuentas
-botHouse({ id: 'casaCamila', pos: local(P.ap, 2.4, -4.4), wall: 0xeefaf1, roof: 0x5fbf86, trim: 0xf4ecd8, door: 0x2f6b4a,
+botHouse({ id: 'casaCamila', pos: local(P.ap, -2, -6.5), wall: 0xeefaf1, roof: 0x5fbf86, trim: 0xf4ecd8, door: 0x2f6b4a,
   title: 'Camila', sub: 'Finanzas personales', bg1: '#5fbf86', bg2: '#3f9a66', fg: '#fbfff8',
   detail: (g, { w, d }) => {
     const goldM = M(0xf2c14e, { metal: 0.55, rough: 0.35 });
@@ -1107,33 +1153,100 @@ botHouse({ id: 'casaCamila', pos: local(P.ap, 2.4, -4.4), wall: 0xeefaf1, roof: 
 // ---------- Letreros con nombre para Lupita y Diego (sus casas ya existen)
 {
   const fin = idRoots.get('casaFinanzas')[0];
-  const plq = signMesh(signTexture('Lupita', 'Finanzas', '#2f6b55', '#1f4f3e', '#f2c14e', 512, 150), 0.95, 0.28); plq.position.set(0, 1.98, 1.42); fin.add(plq);
+  const plq = signMesh(signTexture('Lupita', 'Casa de Finanzas', '#2f6b55', '#1f4f3e', '#f2c14e', 512, 150), 0.95, 0.28); plq.position.set(0, 1.98, 1.42); fin.add(plq);
   const con = idRoots.get('casaConstructor')[0], p = new THREE.Group(); p.position.set(-1.4, 0, 1.6); con.add(p);
   mesh(CYL(0.04, 0.05, 1.3, 6), postM, 0, 0.65, -0.05, p);
   mesh(BOX(1.0, 0.36, 0.04), M(0xffa94d), 0, 1.25, -0.02, p);
-  const dg = signMesh(signTexture('Diego', 'Constructor', '#ff8a66', '#e2553a', '#fff6ea'), 0.92, 0.29); dg.position.set(0, 1.25, 0.005); p.add(dg);
+  const dg = signMesh(signTexture('Diego', 'Casa del Constructor', '#ff8a66', '#e2553a', '#fff6ea'), 0.92, 0.29); dg.position.set(0, 1.25, 0.005); p.add(dg);
 }
 
 // ================= MUELLE Y BARCO =================
 let boat = null;
 {
-  const g = new THREE.Group(); scene.add(g);
-  const len = 7, wood = M(0xa8784d), dark = M(0x6b4a33);
-  mesh(BOX(1.6, 0.12, len), wood, 0, -0.05, PIER_Z0 + len / 2, g);
-  for (let i = 0; i <= 3; i++) for (const sx of [-0.75, 0.75]) mesh(CYL(0.08, 0.08, 1.6, 6), dark, sx, -0.6, PIER_Z0 + 1 + i * 2, g);
-  boat = new THREE.Group(); boat.position.set(2.2, WATER_Y, PIER_Z0 + 5.5); scene.add(boat);
+  const g = new THREE.Group(); g.position.set(0, 0, PIER_Z0); scene.add(g);
+  const len = 10, wood = M(0xa8784d), dark = M(0x6b4a33);
+  mesh(BOX(1.6, 0.12, len), wood, 0, -0.05, len / 2, g);
+  for (let i = 0; i <= 4; i++) for (const sx of [-0.75, 0.75]) mesh(CYL(0.08, 0.08, 1.6, 6), dark, sx, -0.6, 1 + i * 2.2, g);
+  postSign(g, -1.35, 0.3, signTexture('Muelle', 'aquí amarra el barco', '#a8784d', '#7a5436', '#fff6ea', 512, 150), 1.4, 0.41, 1.5, 0x6b4a33);
+  anchorAt(g, 2.7); register(g, 'muelle', 2.4);
+  boat = new THREE.Group(); boat.position.set(2.2, WATER_Y, PIER_Z0 + 8.3); scene.add(boat);
+  const bTex = signTexture('Barco', null, '#c0573e', '#9a3f2a', '#fff6ea', 400, 130);
+  for (const sx of [-1, 1]) { const bp = signMesh(bTex, 0.8, 0.26); bp.position.set(sx * 0.63, 0.22, 0); bp.rotation.y = sx * Math.PI / 2; boat.add(bp); }
   const hull = mesh(CYL(0.6, 0.35, 0.45, 6), M(0xc0573e), 0, 0.15, 0, boat); hull.scale.set(1, 1, 2.2);
   mesh(BOX(0.9, 0.05, 1.9), M(0xe8c89a), 0, 0.36, 0, boat);
   mesh(CYL(0.035, 0.035, 1.8, 5), dark, 0, 1.2, 0.1, boat);
   const ss = new THREE.Shape(); ss.moveTo(0, 0); ss.lineTo(0, 1.5); ss.lineTo(1.0, 0.1); ss.closePath();
   const sail = mesh(new THREE.ShapeGeometry(ss), M(0xfff6ea, { double: true }), 0.04, 0.45, 0.1, boat); sail.rotation.y = -Math.PI / 2;
+  register(boat, 'muelle', 2.4);
+}
+
+// ================= PÓRTICOS DE ZONA Y CERCAS =================
+// Un pórtico grande donde el camino cruza el borde de cada territorio, con letrero por ambos lados.
+function zoneGate(k, pts, title, sub, c1, c2, fg) {
+  const T = TERR[k];
+  let bi = 1, bd = 1e9;
+  for (let i = 1; i < pts.length - 1; i++) { const d = Math.abs(Math.hypot(pts[i].x - T.c.x, pts[i].z - T.c.z) - T.r); if (d < bd) { bd = d; bi = i; } }
+  const p = pts[bi], tg = pts[bi + 1].clone().sub(pts[bi - 1]).normalize();
+  const g = new THREE.Group(); g.position.set(p.x, 0, p.z); g.rotation.y = Math.atan2(tg.x, tg.z); scene.add(g);
+  const dark = M(new THREE.Color(CIV[k].css).multiplyScalar(0.62).getHex()), cream = M(0xfff4e2);
+  for (const sx of [-1.55, 1.55]) {
+    mesh(BOX(0.42, 0.3, 0.42), cream, sx, 0.15, 0, g);
+    mesh(CYL(0.13, 0.16, 3.7, 6), dark, sx, 2.0, 0, g);
+    const cap = mesh(new THREE.OctahedronGeometry(0.2, 0), M(0xf2c14e, { metal: 0.55, rough: 0.35 }), sx, 4.05, 0, g); cap.castShadow = false;
+  }
+  mesh(BOX(3.5, 0.2, 0.22), dark, 0, 3.55, 0, g);
+  mesh(BOX(3.35, 1.08, 0.12), dark, 0, 4.5, 0, g);
+  const tex = signTexture(title, sub, c1, c2, fg, 512, 160);
+  for (const side of [1, -1]) { const sg = signMesh(tex, 3.2, 1.0); sg.position.set(0, 4.5, side * 0.07); if (side < 0) sg.rotation.y = Math.PI; g.add(sg); }
+  gateSpots.push({ x: p.x, z: p.z });
+  return g;
+}
+const GATES = {
+  centro: zoneGate('centro', PIER_PATH, 'Plaza del Rey', 'Centro del reino', '#f5c86a', '#d99a2b', '#3a2610'),
+  rp: zoneGate('rp', PATHS.rp, 'Royal Prestige', 'Civilización · ventas y equipo', '#a77bf0', '#6a3fb5', '#fff8e6'),
+  tr: zoneGate('tr', PATHS.tr, 'Trading', 'Civilización · SOLO PAPEL', '#2fc7b0', '#14857a', '#f2fffb'),
+  ag: zoneGate('ag', PATHS.ag, 'Agencia IA', 'Civilización nueva', '#ff8a66', '#e0553a', '#fff4e6'),
+  ap: zoneGate('ap', PATHS.ap, 'Apoyo', 'Civilización · día a día', '#f6aabb', '#e0839a', '#fffafc'),
+};
+for (const [k, id] of [['centro', 'plaza'], ['rp', 'rpOffice'], ['tr', 'trTower'], ['ag', 'agStudio'], ['ap', 'apCottage']]) register(GATES[k], id, 2.2);
+// Cerca baja instanciada (postes + travesaño), con hueco donde pasan los caminos
+{
+  const posts = [], rails = [];
+  for (const k of Object.keys(TERR)) {
+    const T = TERR[k], n = Math.round(Math.PI * 2 * T.r / 1.45), col = terrCol(k, 0.85).offsetHSL(0, 0.05, -0.08);
+    const ok = [];
+    for (let i = 0; i < n; i++) {
+      const a = i / n * Math.PI * 2, x = T.c.x + Math.cos(a) * T.r, z = T.c.z + Math.sin(a) * T.r;
+      let free = Math.hypot(x, z) > PLAZA_R + 0.6;
+      for (const q of gateSpots) if (free && Math.hypot(x - q.x, z - q.z) < 2.0) free = false;
+      for (const q of pathSamples) if (free && Math.hypot(x - q.x, z - q.z) < 1.15) free = false;
+      ok.push(free ? { x, z, a } : null);
+      if (free) posts.push({ x, z, col });
+    }
+    for (let i = 0; i < n; i++) { const p0 = ok[i], p1 = ok[(i + 1) % n]; if (p0 && p1) rails.push({ p0, p1, col }); }
+  }
+  const mat = new THREE.MeshStandardMaterial({ flatShading: true, roughness: 0.85 });
+  const postIM = new THREE.InstancedMesh((() => { const g = BOX(0.16, 0.78, 0.16); g.translate(0, 0.39, 0); return g; })(), mat, posts.length);
+  const railIM = new THREE.InstancedMesh(BOX(1, 0.09, 0.07), mat, rails.length * 2);
+  const d = new THREE.Object3D();
+  posts.forEach((p, i) => { d.position.set(p.x, 0.05, p.z); d.rotation.set(0, 0, 0); d.scale.set(1, 1, 1); d.updateMatrix(); postIM.setMatrixAt(i, d.matrix); postIM.setColorAt(i, p.col); });
+  rails.forEach((r, i) => {
+    const dx = r.p1.x - r.p0.x, dz = r.p1.z - r.p0.z, L = Math.hypot(dx, dz);
+    for (const [j, y] of [[0, 0.62], [1, 0.34]]) {
+      d.position.set((r.p0.x + r.p1.x) / 2, y, (r.p0.z + r.p1.z) / 2); d.rotation.set(0, -Math.atan2(dz, dx), 0); d.scale.set(L, 1, 1); d.updateMatrix();
+      railIM.setMatrixAt(i * 2 + j, d.matrix); railIM.setColorAt(i * 2 + j, r.col);
+    }
+  });
+  for (const im of [postIM, railIM]) { im.castShadow = true; im.receiveShadow = true; if (im.instanceColor) im.instanceColor.needsUpdate = true; scene.add(im); }
 }
 
 // ================= VEGETACIÓN =================
-const zones = [{ x: 0, z: 0, r: 6.8 }, { x: 0, z: -9.2, r: 5.8 }, { x: P.rp.x, z: P.rp.z, r: 5.4 }, { x: P.tr.x, z: P.tr.z, r: 4.6 },
-  { x: P.ag.x, z: P.ag.z, r: 6.6 }, { x: P.ap.x, z: P.ap.z, r: 4.4 }, { x: GARDEN.x, z: GARDEN.z, r: 2.4 }, { x: 0, z: PIER_Z0, r: 2.4 }].concat(botHomeZones);
+const zones = [{ x: 0, z: 0, r: PLAZA_R + 2.2 }, { x: 0, z: -10.2, r: 6.2 }, { x: P.rp.x, z: P.rp.z, r: 4.0 }, { ...local(P.rp, -3.6, -0.6), r: 2.4 }, { x: P.tr.x, z: P.tr.z, r: 4.2 },
+  { x: P.ag.x, z: P.ag.z, r: 3.2 }].concat(Object.values(AG_HOUSES).map((h) => ({ ...local(P.ag, h.rx, h.fz), r: 3.6 })),
+  [{ x: P.ap.x, z: P.ap.z, r: 4.0 }, { x: GARDEN.x, z: GARDEN.z, r: 3.6 }, { x: 0, z: PIER_Z0, r: 3.0 }], gateSpots.map((q) => ({ x: q.x, z: q.z, r: 2.6 })), botHomeZones);
 function freeSpot(x, z, pad = 1.5) {
   for (const zn of zones) if (Math.hypot(x - zn.x, z - zn.z) < zn.r) return false;
+  for (const k in TERR) { const T = TERR[k]; if (Math.abs(Math.hypot(x - T.c.x, z - T.c.z) - T.r) < 1.1) return false; }
   for (const p of pathSamples) if (Math.hypot(x - p.x, z - p.z) < pad) return false;
   return true;
 }
@@ -1145,7 +1258,7 @@ function randomSpot(maxF = 0.9, pad = 1.5, tries = 60) {
   return null;
 }
 const trees = [];
-const TREE_N = 58;
+const TREE_N = 74;
 const trunkIM = new THREE.InstancedMesh((() => { const g = CYL(0.12, 0.18, 0.8, 5); g.translate(0, 0.4, 0); return g; })(), M(0x8a5a3c), TREE_N);
 const pineA = new THREE.InstancedMesh((() => { const g = new THREE.ConeGeometry(0.95, 1.5, 6); g.translate(0, 1.35, 0); return g; })(), new THREE.MeshStandardMaterial({ flatShading: true, roughness: 0.9 }), TREE_N);
 const pineB = new THREE.InstancedMesh((() => { const g = new THREE.ConeGeometry(0.68, 1.15, 6); g.translate(0, 2.05, 0); return g; })(), new THREE.MeshStandardMaterial({ flatShading: true, roughness: 0.9 }), TREE_N);
@@ -1163,7 +1276,7 @@ for (const im of [trunkIM, pineA, pineB, roundT]) { im.castShadow = true; im.rec
     else {
       let c = roundCols[Math.floor(rnd() * 2)];
       if (rnd() < 0.3) c = roundCols[2 + Math.floor(rnd() * 2)];
-      if (Math.hypot(s.x - P.ap.x, s.z - P.ap.z) < 9 && rnd() < 0.6) c = roundCols[4];
+      if (Math.hypot(s.x - P.ap.x, s.z - P.ap.z) < 12 && rnd() < 0.6) c = roundCols[4];
       roundT.setColorAt(t.k, c);
     }
   }
@@ -1183,19 +1296,19 @@ function updateTrees(t) {
 }
 updateTrees(0);
 { // flores, arbustos y rocas
-  const FN = 170, fl = new THREE.InstancedMesh(new THREE.IcosahedronGeometry(0.1, 0), new THREE.MeshStandardMaterial({ flatShading: true, roughness: 0.7 }), FN);
+  const FN = 215, fl = new THREE.InstancedMesh(new THREE.IcosahedronGeometry(0.1, 0), new THREE.MeshStandardMaterial({ flatShading: true, roughness: 0.7 }), FN);
   const fc = [0xff8fb1, 0xffe066, 0xffffff, 0xff9a6b, 0xc8a2ff].map((c) => new THREE.Color(c));
   let n = 0;
   for (let i = 0; i < FN; i++) {
     let s;
-    if (i < 40) { const a = rnd() * 6.28, r = 1.4 + rnd() * 2.2; s = { x: GARDEN.x + Math.cos(a) * r, z: GARDEN.z + Math.sin(a) * r }; if (Math.hypot(s.x - P.ap.x, s.z - P.ap.z) < 2.6) continue; }
+    if (i < 40) { const a = rnd() * 6.28, r = 1.6 + rnd() * 1.8; s = { x: GARDEN.x + Math.cos(a) * r, z: GARDEN.z + Math.sin(a) * r }; if (Math.hypot(s.x - P.ap.x, s.z - P.ap.z) < 3.2) continue; }
     else s = randomSpot(0.95, 0.9, 20);
     if (!s) continue;
     dummy.position.set(s.x, 0.12, s.z); dummy.rotation.set(0, 0, 0); dummy.scale.setScalar(0.7 + rnd() * 0.7); dummy.updateMatrix();
     fl.setMatrixAt(n, dummy.matrix); fl.setColorAt(n, i < 40 ? fc[rnd() < 0.6 ? 0 : 2] : fc[Math.floor(rnd() * fc.length)]); n++;
   }
   fl.count = n; fl.instanceColor.needsUpdate = true; scene.add(fl);
-  const SN = 34, sh = new THREE.InstancedMesh(new THREE.IcosahedronGeometry(0.45, 0), new THREE.MeshStandardMaterial({ flatShading: true, roughness: 0.9 }), SN);
+  const SN = 44, sh = new THREE.InstancedMesh(new THREE.IcosahedronGeometry(0.45, 0), new THREE.MeshStandardMaterial({ flatShading: true, roughness: 0.9 }), SN);
   const sc = [0x5fae4e, 0x74bd57, 0x4f9a48].map((c) => new THREE.Color(c)); n = 0;
   for (let i = 0; i < SN; i++) {
     const s = randomSpot(0.95, 1.1, 30); if (!s) continue;
@@ -1204,8 +1317,8 @@ updateTrees(0);
   }
   sh.count = n; sh.instanceColor.needsUpdate = true; sh.castShadow = true; sh.receiveShadow = true; scene.add(sh);
   const rockM = M(0xa59a8f), rg = new THREE.DodecahedronGeometry(0.5, 0);
-  for (let i = 0; i < 16; i++) {
-    const a = rnd() * Math.PI * 2, onBeach = i < 11, r = shoreR(a) * (onBeach ? 1.05 + rnd() * 0.12 : 0.85 * Math.sqrt(rnd()));
+  for (let i = 0; i < 20; i++) {
+    const a = rnd() * Math.PI * 2, onBeach = i < 14, r = shoreR(a) * (onBeach ? 1.05 + rnd() * 0.12 : 0.85 * Math.sqrt(rnd()));
     const x = Math.cos(a) * r, z = Math.sin(a) * r;
     if (!onBeach && !freeSpot(x, z, 1.2)) continue;
     const m = mesh(rg, rockM, x, onBeach ? -0.35 : 0.05, z); const k = 0.5 + rnd() * 1.1; m.scale.set(k, k * 0.7, k * 0.9); m.rotation.set(rnd(), rnd() * 6, rnd()); scene.add(m);
@@ -1271,10 +1384,10 @@ function makePerson(o) {
 }
 
 function pingPts(pts, startFrac = 0) { return { pts, start: Math.floor((pts.length - 1) * startFrac) }; }
-const pedroPts = [V(2.15, 1.0), V(2.45, -0.4), V(2.0, 1.7)];
-const camilaPts = [V(-2.15, 1.0), V(-2.0, 1.7), V(-2.45, -0.4)];
-const tomasPts = new THREE.QuadraticBezierCurve3(V(0, 5.0), V(0.3, (4.4 + PIER_Z0) / 2), V(0, PIER_Z0 - 0.4)).getSpacedPoints(8);
-const sofiaPts = []; for (let i = 0; i < 6; i++) { const a = i / 6 * Math.PI * 2; sofiaPts.push(GARDEN.clone().add(V(Math.cos(a) * 1.6, Math.sin(a) * 1.6 + 0.6).applyAxisAngle(new THREE.Vector3(0, 1, 0), frame(P.ap).yaw))); }
+const pedroPts = [V(2.6, 1.2), V(3.0, -0.5), V(2.4, 2.1)];
+const camilaPts = [V(-2.6, 1.2), V(-2.4, 2.1), V(-3.0, -0.5)];
+const tomasPts = new THREE.QuadraticBezierCurve3(V(0, PLAZA_R - 0.2), V(0.4, (PLAZA_R - 0.6 + PIER_Z0) / 2), V(0, PIER_Z0 - 0.4)).getSpacedPoints(12);
+const sofiaPts = []; for (let i = 0; i < 8; i++) { const a = i / 8 * Math.PI * 2; sofiaPts.push(GARDEN.clone().add(V(Math.cos(a) * 2.1, Math.sin(a) * 2.1 + 0.6).applyAxisAngle(new THREE.Vector3(0, 1, 0), frame(P.ap).yaw))); }
 
 const AGENTS_DEF = [
   { id: 'rey', static: true, pos: V(0, 0.2), y: 0.8, o: { body: 0x7a2333, accent: 0xf2c14e, hair: 'crown', hairC: 0x6b4a33, legs: 0x4a1a24, scale: 1.35,
@@ -1307,7 +1420,7 @@ const AGENTS_DEF = [
     label: { name: 'Diego', sub: 'Constructor', dot: '#ffb36b' } },
   { id: 'clarita', path: pingPts(PATHS.ap, 0.2), speed: 1.3, o: { body: 0xffb38a, accent: 0xfffaf2, hair: 'bun', hairC: 0x6b3e26, legs: 0x8a5a5a },
     label: { name: 'Clarita', sub: 'Día a Día', dot: '#ffc2a0' } },
-  { id: 'sofia', path: { pts: sofiaPts, start: 0 }, loop: true, pauseAt: [0, 3], pause: [2.5, 3], speed: 0.7, o: { body: 0xf08ca3, accent: 0xffe1e8, hair: 'long', hairC: 0x2f1f1a, skin: 0xe8b48e, legs: 0x8a4a5e,
+  { id: 'sofia', path: { pts: sofiaPts, start: 0 }, loop: true, pauseAt: [0, 4], pause: [2.5, 3], speed: 0.7, o: { body: 0xf08ca3, accent: 0xffe1e8, hair: 'long', hairC: 0x2f1f1a, skin: 0xe8b48e, legs: 0x8a4a5e,
     extra: ({ inner }) => { mesh(new THREE.IcosahedronGeometry(0.06, 0), M(0xffffff, { emissive: 0xffd0dc, ei: 0.4 }), 0.2, 1.33, 0.06, inner); } },
     label: { name: 'Sofía', sub: 'Apoyo', dot: '#f6aabb' } },
   { id: 'finanzas', path: { pts: AG_LOOPS.finanzas, start: 6 }, loop: true, pauseAt: [0, 6], pause: [2.5, 2.5], speed: 0.9,
@@ -1393,43 +1506,80 @@ function updateAgent(a, dt, t) {
 // ================= ETIQUETAS =================
 const labelLayer = $('#labels'), labels = [];
 let showNames = true;
-function addLabel(anchor, id, html, kind, dy = 0) {
+// Prioridad (tier): 0 zona · 1 edificio principal · 2 casa / objeto · 3 agente. El seleccionado siempre se ve.
+function addLabel(anchor, id, html, kind, dy = 0, tier = 2) {
   const el = document.createElement('div'); el.className = 'lbl ' + kind; el.innerHTML = html;
   el.setAttribute('role', 'button'); el.tabIndex = -1;
   el.addEventListener('click', (e) => { e.stopPropagation(); if (id) select(id); });
   labelLayer.appendChild(el);
-  const L = { el, anchor, id, kind, dy, ph: rnd() * 6, vis: true }; labels.push(L); return L;
+  const L = { el, anchor, id, kind, dy, tier, ph: rnd() * 6, vis: true, w: 0, h: 0, off: 0 }; labels.push(L); return L;
 }
 const esc = (s) => s.replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
 const bldPill = (name, css, extra = '') => `<div class="pill"><i style="background:${css}"></i>${esc(name)}${extra}</div>`;
-addLabel(plaza.userData.anchor, 'plaza', bldPill('Plaza del Rey', CIV.centro.css), 'bld');
-for (const [id, name, civ, extra] of [['rpOffice', 'Royal Prestige', 'rp', ''], ['trTower', 'Trading', 'tr', ''], ['agStudio', 'Agencia IA', 'ag', ' <span class="new">NUEVO</span>'], ['casaExplorador', 'Casa del Explorador · Marco', 'ag', ''], ['casaConstructor', 'Casa del Constructor · Diego', 'ag', ''], ['casaFinanzas', 'Casa de Finanzas · Lupita', 'ag', ''], ['apCottage', 'Apoyo', 'ap', ''],
-  ['casaPedro', 'Casa de Pedro', 'centro', ''], ['casaCarlos', 'Casa de Carlos', 'centro', ''], ['casaTomas', 'Casa de Tomás', 'centro', ''], ['casaRita', 'Casa de Rita', 'tr', ''],
-  ['casaJuan', 'Casa de Juan', 'rp', ''], ['casaAlberto', 'Casa de Alberto', 'rp', ''], ['casaValeria', 'Casa de Valeria', 'rp', ''],
-  ['casaClarita', 'Casa de Clarita', 'ap', ''], ['casaSofia', 'Casa de Sofía', 'ap', ''], ['casaCamila', 'Casa de Camila', 'ap', '']]) {
-  const root = idRoots.get(id)[0]; addLabel(root.userData.anchor, id, bldPill(name, CIV[civ].css, extra), 'bld');
+// zonas
+addLabel(plaza.userData.anchor, 'plaza', bldPill('Plaza del Rey', CIV.centro.css), 'bld zone', 0, 0);
+for (const [id, name, civ, extra] of [['rpOffice', 'Royal Prestige', 'rp', ''], ['trTower', 'Trading', 'tr', ''], ['agStudio', 'Agencia IA', 'ag', ' <span class="new">NUEVO</span>'], ['apCottage', 'Apoyo', 'ap', '']]) {
+  addLabel(idRoots.get(id)[0].userData.anchor, id, bldPill(name, CIV[civ].css, extra), 'bld zone', 0, 0);
 }
-addLabel(idRoots.get('trTower')[0].userData.ticker, 'meme', `<div class="pill">$294.56 / $300 papel <b>SOLO PAPEL</b></div>`, 'ticker');
+// edificios principales
+for (const [id, name, civ] of [['castillo', 'Castillo del Rey', 'centro'], ['casaExplorador', 'Casa del Explorador · Marco', 'ag'], ['casaConstructor', 'Casa del Constructor · Diego', 'ag'], ['casaFinanzas', 'Casa de Finanzas · Lupita', 'ag']]) {
+  addLabel(idRoots.get(id)[0].userData.anchor, id, bldPill(name, CIV[civ].css), 'bld', 0, 1);
+}
+// casas y objetos
+for (const [id, name, civ] of [['casaPedro', 'Casa de Pedro', 'centro'], ['casaCarlos', 'Casa de Carlos', 'centro'], ['casaTomas', 'Casa de Tomás', 'centro'], ['casaRita', 'Casa de Rita', 'tr'],
+  ['casaJuan', 'Casa de Juan', 'rp'], ['casaAlberto', 'Casa de Alberto', 'rp'], ['casaValeria', 'Casa de Valeria', 'rp'],
+  ['casaClarita', 'Casa de Clarita', 'ap'], ['casaSofia', 'Casa de Sofía', 'ap'], ['casaCamila', 'Casa de Camila', 'ap'],
+  ['bodega', 'Bodega RoyalOne', 'rp'], ['jardin', 'Jardín', 'ap'], ['muelle', 'Muelle', 'centro']]) {
+  addLabel(idRoots.get(id)[0].userData.anchor, id, bldPill(name, CIV[civ].css), 'bld minor', 0, 2);
+}
+addLabel(idRoots.get('trTower')[0].userData.ticker, 'meme', `<div class="pill">$294.56 / $300 papel <b>SOLO PAPEL</b></div>`, 'ticker', 0, 1);
 for (const a of agents) {
   const l = a.def.label;
-  addLabel(a.root.userData.anchor, a.def.info ?? a.id, `<div class="pill"><i style="background:${l.dot}"></i><span class="nm">${esc(l.name)}</span><span class="sb">${esc(l.sub)}</span></div>`, 'agent' + (l.cls ? ' ' + l.cls : ''), 0.15);
+  addLabel(a.root.userData.anchor, a.def.info ?? a.id, `<div class="pill"><i style="background:${l.dot}"></i><span class="nm">${esc(l.name)}</span><span class="sb">${esc(l.sub)}</span></div>`, 'agent' + (l.cls ? ' ' + l.cls : ''), 0.15, a.id === 'rey' ? 1 : 3);
 }
 const _v = new THREE.Vector3();
+const LOD = { main: 112, mainNarrow: 78, house: 60, agent: 52, houseNear: 66, agentNear: 56 };
+let lblFrame = 0;
+const lblCand = [], lblPlaced = [];
+function hideLabel(L) { if (L.vis) { L.el.style.display = 'none'; L.vis = false; } }
 function updateLabels(t) {
   const w = window.innerWidth, h = window.innerHeight;
+  const kAsp = Math.pow(clamp(1.5 / (w / h), 1, 2), 0.85);
+  const camDist = camera.position.distanceTo(controls.target) / kAsp;
+  if (++lblFrame % 240 === 0) for (const L of labels) L.w = 0;   // re-medir (fuentes / textos en vivo)
+  lblCand.length = 0;
   for (const L of labels) {
-    const isAgent = L.kind.startsWith('agent');
-    if (isAgent && !showNames && L.id !== selectedId) { if (L.vis) { L.el.style.display = 'none'; L.vis = false; } continue; }
+    const sel = L.id === selectedId, isAgent = L.kind.startsWith('agent');
+    let show = sel || (L.tier === 0) || (L.tier === 1 && camDist < (w < 760 ? LOD.mainNarrow : LOD.main)) || (L.tier === 2 && camDist < LOD.house) || (L.tier === 3 && camDist < LOD.agent);
+    if (isAgent && !showNames && !sel) show = false;
+    if (!show) { hideLabel(L); continue; }
     L.anchor.getWorldPosition(_v);
     _v.y += L.dy + Math.sin(t * 1.6 + L.ph) * 0.08;
     const dist = _v.distanceTo(camera.position);
+    if (!sel && ((L.tier === 2 && dist > LOD.houseNear * kAsp) || (L.tier === 3 && dist > LOD.agentNear * kAsp))) { hideLabel(L); continue; }
     _v.project(camera);
-    if (_v.z > 1 || Math.abs(_v.x) > 1.15 || Math.abs(_v.y) > 1.15) { if (L.vis) { L.el.style.display = 'none'; L.vis = false; } continue; }
+    if (_v.z > 1 || Math.abs(_v.x) > 1.15 || Math.abs(_v.y) > 1.15) { hideLabel(L); continue; }
     if (!L.vis) { L.el.style.display = ''; L.vis = true; }
-    const x = (_v.x * 0.5 + 0.5) * w, y = (-_v.y * 0.5 + 0.5) * h;
-    const s = isAgent ? clamp(30 / dist, 0.62, 1.05) : clamp(42 / dist, 0.72, 1.1);
-    L.el.style.transform = `translate3d(${x.toFixed(1)}px,${y.toFixed(1)}px,0) scale(${s.toFixed(3)}) translate(-50%,-100%)`;
-    L.el.style.zIndex = String(L.id === selectedId ? 2000 : 1000 - Math.round(dist));
+    if (!L.w) { L.w = L.el.offsetWidth; L.h = L.el.offsetHeight; }
+    const s = isAgent ? clamp(30 / dist, 0.62, 1.05) : L.tier === 0 ? clamp(60 / dist, 0.8, 1.1) : clamp(42 / dist, 0.68, 1.05);
+    lblCand.push({ L, x: (_v.x * 0.5 + 0.5) * w, y: (-_v.y * 0.5 + 0.5) * h, s, dist, pri: sel ? -1 : L.tier });
+  }
+  // anti-solape: primero los de mayor prioridad; los demás se corren arriba/abajo o se esconden
+  lblCand.sort((a, b) => a.pri - b.pri || a.dist - b.dist);
+  lblPlaced.length = 0;
+  for (const c of lblCand) {
+    const L = c.L, bw = L.w * c.s + 6, bh = L.h * c.s + 4;
+    let off = null;
+    for (const o of [0, L.off, bh, -bh, 2 * bh]) {
+      const x0 = c.x - bw / 2, x1 = c.x + bw / 2, y0 = c.y - bh + o, y1 = c.y + o;
+      let hit = false;
+      for (const r of lblPlaced) if (x0 < r.x1 && x1 > r.x0 && y0 < r.y1 && y1 > r.y0) { hit = true; break; }
+      if (!hit) { off = o; lblPlaced.push({ x0, x1, y0, y1 }); break; }
+    }
+    if (off === null) { if (c.pri >= 0) { hideLabel(L); continue; } off = 0; }
+    L.off = off;
+    L.el.style.transform = `translate3d(${c.x.toFixed(1)}px,${(c.y + off).toFixed(1)}px,0) scale(${c.s.toFixed(3)}) translate(-50%,-100%)`;
+    L.el.style.zIndex = String(c.pri < 0 ? 2000 : 1000 - L.tier * 200 - Math.min(199, Math.round(c.dist)));
   }
 }
 
@@ -1503,8 +1653,8 @@ renderer.domElement.addEventListener('pointermove', (e) => {
 let fly = null, autoOn = true, resumeT = 0;
 function defaultView() {
   const asp = window.innerWidth / window.innerHeight;
-  const dist = 50 * Math.pow(clamp(1.5 / asp, 1, 2.0), 0.85);
-  return { target: V(0, 1.5).setY(asp < 0.9 ? 2.8 : 0.6), dist, phi: 0.98, theta: 0.22 };
+  const dist = 92 * Math.pow(clamp(1.5 / asp, 1, 2.0), 0.85);
+  return { target: V(0, 5.5).setY(asp < 0.9 ? 4.5 : 1.0), dist, phi: 0.96, theta: 0.22 };
 }
 function flyTo(target, dist, phi, theta, dur = 1.4) {
   const cur = new THREE.Spherical().setFromVector3(camera.position.clone().sub(controls.target));
@@ -1515,7 +1665,7 @@ function resetView(dur = 1.6) { const v = defaultView(); flyTo(v.target, v.dist,
 { // intro: acercamiento suave
   const v = defaultView();
   controls.target.copy(v.target);
-  camera.position.setFromSpherical(new THREE.Spherical(v.dist * 1.7, 0.7, v.theta - 0.9)).add(v.target);
+  camera.position.setFromSpherical(new THREE.Spherical(Math.min(v.dist * 1.35, controls.maxDistance), 0.7, v.theta - 0.9)).add(v.target);
   camera.lookAt(v.target);
   flyTo(v.target, v.dist, v.phi, v.theta, 3.0);
 }
@@ -1529,9 +1679,12 @@ $('#btnReset').addEventListener('click', () => { deselect(); resetView(); });
 document.querySelectorAll('.chip').forEach((b) => b.addEventListener('click', () => {
   const id = b.dataset.go, root = idRoots.get(id)[0];
   const p = new THREE.Vector3(); root.getWorldPosition(p);
-  if (id === 'plaza') p.set(0, 0, -2);
+  if (id === 'plaza') p.set(0, 0, -3);
+  else if (id === 'agStudio') p.copy(P.ag);
   const asp = window.innerWidth / window.innerHeight;
-  flyTo(p.setY(asp < 0.9 ? 2.5 : 1.2), 24 * Math.pow(clamp(1.3 / asp, 1, 2.2), 0.8), 0.95, Math.atan2(p.x, p.z) * 0.6 + 0.1, 1.4);
+  // la cámara se pone del lado de la plaza, mirando hacia la zona (las fachadas y letreros miran a la plaza)
+  const theta = id === 'plaza' ? 0.12 : Math.atan2(-p.x, -p.z) + 0.25;
+  flyTo(p.setY(asp < 0.9 ? 3.0 : 1.5), 36 * Math.pow(clamp(1.3 / asp, 1, 2.2), 0.8), 0.92, theta, 1.4);
   controls.autoRotate = false; clearTimeout(resumeT);
   resumeT = setTimeout(() => { if (autoOn) controls.autoRotate = true; }, 9000);
   select(id);
