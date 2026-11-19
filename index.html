@@ -296,6 +296,17 @@ const INFO = {
   clarita: { name: 'Clarita - Día a Día', civ: 'ap', role: 'Día a Día', desc: 'Clarita ayuda con el día a día.' },
   sofia: { name: 'Sofía - Apoyo', civ: 'ap', role: 'Apoyo', desc: 'Sofía brinda apoyo. Aquí no se muestra nada privado.' },
   apCottage: { name: 'Casita de Apoyo', civ: 'ap', desc: 'Un rincón tranquilo y cálido para el día a día y el apoyo emocional.' },
+  // casas de los bots
+  casaPedro: { name: 'Casa de Pedro', civ: 'centro', role: 'Consejero / JARVIS', desc: 'La casa de Pedro, junto a la plaza. Desde aquí coordina a las civilizaciones y le lleva al rey el resumen de cada una.' },
+  casaCarlos: { name: 'Casa de Carlos', civ: 'centro', role: 'Guionista', desc: 'La casa de Carlos, el guionista. Aquí escribe los guiones para videos de redes sociales, con gancho y cierre.' },
+  casaTomas: { name: 'Casa de Tomás', civ: 'centro', role: 'Cazador de ofertas', desc: 'La casa de Tomás, a la entrada del muelle. Aquí compara precios, reseñas y tiendas. Nunca compra sin el sí del rey.' },
+  casaRita: { name: 'Casa de Rita', civ: 'tr', role: 'Trader', desc: 'La casa de Rita, al lado del Estudio de Trading. Desde aquí vigila el bot y reporta cómo va el día. Solo dinero de prueba.', badge: 'SOLO PAPEL' },
+  casaJuan: { name: 'Casa de Juan', civ: 'rp', role: 'Postventa Royal', desc: 'La casa de Juan, junto a la oficina de Royal Prestige. Aquí atiende la postventa y el programa de referidos.' },
+  casaAlberto: { name: 'Casa de Alberto', civ: 'rp', role: 'Órdenes', desc: 'La casa de Alberto, cerca de la bodega. Aquí arma y da seguimiento a las órdenes en RoyalOne.' },
+  casaValeria: { name: 'Casa de Valeria', civ: 'rp', role: 'Reclutadora', desc: 'La casa de Valeria, con su tablero de vacantes. Aquí prepara las publicaciones de empleo; el rey aprueba cada una antes de subirla.' },
+  casaClarita: { name: 'Casa de Clarita', civ: 'ap', role: 'Día a Día', desc: 'La casa de Clarita, en el barrio de Apoyo. Aquí organiza las cosas del día a día.' },
+  casaSofia: { name: 'Casa de Sofía', civ: 'ap', role: 'Apoyo', desc: 'La casa de Sofía, junto al jardín. Un lugar tranquilo para dar apoyo. Aquí no se muestra nada privado.' },
+  casaCamila: { name: 'Casa de Camila', civ: 'ap', role: 'Finanzas personales', desc: 'La casa de Camila, en el barrio de Apoyo. Aquí lleva las finanzas personales del reino. Aquí no se muestran cifras privadas.' },
 };
 
 // Datos en vivo desde data.json (agregados públicos). Si falla la carga, se quedan estos valores horneados.
@@ -982,6 +993,127 @@ const GARDEN = local(P.ap, 2.9, 0.9);
   smoke.heart = heart;
 }
 
+// ---------- Casas de los bots: una casita con letrero por persona
+const botHomeZones = [];
+function botHouse(o) {
+  const w = o.w ?? 2.2, d = o.d ?? 1.8, h = o.h ?? 1.55, rh = o.roofH ?? 1.1;
+  const g = house({ w, d, h, roofH: rh, wall: o.wall, roof: o.roof, trim: o.trim, door: o.door, base: o.base });
+  // letrero con el nombre sobre la fachada
+  const sy = 0.25 + h + 0.14, sz = d / 2 + 0.17;
+  mesh(BOX(1.62, 0.56, 0.04), M(o.trim), 0, sy, sz - 0.035, g);
+  const sg = signMesh(signTexture(o.title, o.sub, o.bg1, o.bg2, o.fg), 1.5, 0.47); sg.position.set(0, sy, sz); g.add(sg);
+  if (o.detail) o.detail(g, { w, d, h, rh });
+  place(g, o.pos, o.yawOff ?? 0); anchorAt(g, 0.25 + h + rh + 0.75); register(g, o.id, 2.0);
+  botHomeZones.push({ x: o.pos.x, z: o.pos.z, r: 2.0 });
+  return g;
+}
+const postM = M(0x7a5a3c);
+// Pedro: azul marino y oro, gema JARVIS en el techo
+botHouse({ id: 'casaPedro', pos: V(7.2, 3.0), wall: 0xf4ecdc, roof: 0x2e4a7a, trim: 0xf5c86a, door: 0x2a3a5c,
+  title: 'Pedro', sub: 'Consejero · JARVIS', bg1: '#2e4a7a', bg2: '#1f3358', fg: '#f5c86a',
+  detail: (g, { w, h, rh }) => {
+    mesh(new THREE.OctahedronGeometry(0.17, 0), M(0xf5c86a, { metal: 0.55, rough: 0.35, emissive: 0xffb050, ei: 0.5 }), 0, 0.32 + h + rh + 0.15, 0, g);
+    flag(g, -(w / 2 + 0.35), 0.05, -0.4, 0x2e4a7a, 1.5);
+  } });
+// Carlos (clave camila): rosa, claqueta de guion junto a la puerta
+botHouse({ id: 'casaCarlos', pos: V(-7.2, 3.0), wall: 0xfff0f2, roof: 0xf07a92, trim: 0xffd6de, door: 0x9a3a52,
+  title: 'Carlos', sub: 'Guionista', bg1: '#f07a92', bg2: '#d4566f', fg: '#fff6f2',
+  detail: (g, { w, d }) => {
+    const c = new THREE.Group(); c.position.set(w / 2 + 0.4, 0.09, d / 2 - 0.1); c.rotation.y = -0.4; g.add(c);
+    mesh(BOX(0.46, 0.34, 0.05), M(0x2b2230), 0, 0.17, 0, c);
+    mesh(BOX(0.46, 0.04, 0.055), M(0xffffff), 0, 0.26, 0, c);
+    const top = mesh(BOX(0.48, 0.08, 0.05), M(0xffffff), 0.02, 0.4, 0, c); top.rotation.z = 0.22;
+    mesh(CYL(0.015, 0.025, 0.4, 5), M(0xf2c14e), -0.12, 0.47, 0.06, c).rotation.z = -0.5;
+  } });
+// Tomás: naranja, lupa en un poste y etiqueta de precio
+botHouse({ id: 'casaTomas', pos: V(3.6, 8.6), wall: 0xfff1e4, roof: 0xe8834f, trim: 0xffd2a8, door: 0x8a4a2e,
+  title: 'Tomás', sub: 'Cazador de ofertas', bg1: '#e8834f', bg2: '#c8622f', fg: '#fff6ea',
+  detail: (g, { w }) => {
+    mesh(CYL(0.04, 0.05, 1.2, 6), postM, w / 2 + 0.45, 0.6, 0.3, g);
+    mesh(new THREE.TorusGeometry(0.2, 0.045, 5, 14), M(0x3a2a22), w / 2 + 0.45, 1.42, 0.3, g);
+    mesh(CYL(0.18, 0.18, 0.02, 12), M(0xcfeef6, { emissive: 0x9fd8ea, ei: 0.4 }), w / 2 + 0.45, 1.42, 0.3, g).rotation.x = Math.PI / 2;
+    mesh(BOX(0.04, 0.24, 0.36), M(0xffd23f), -(w / 2 + 0.05), 1.15, 0.55, g).rotation.x = 0.25;
+  } });
+// Rita: turquesa, antena y pantallita con gráfica junto al Estudio de Trading
+botHouse({ id: 'casaRita', pos: local(P.tr, 4.4, 0.6), wall: 0xe8fff9, roof: 0x2fc7b0, trim: 0x1f9e8f, door: 0x0f4f48,
+  title: 'Rita', sub: 'Trader', bg1: '#2fc7b0', bg2: '#1a9a88', fg: '#f2fffb',
+  detail: (g, { w, h, rh }) => {
+    mesh(CYL(0.03, 0.04, 1.0, 5), M(0xd0d8d8, { metal: 0.6, rough: 0.4 }), -0.4, 0.32 + h + rh * 0.5 + 0.4, -0.25, g);
+    mesh(new THREE.IcosahedronGeometry(0.07, 0), M(0xff5a4a, { emissive: 0xff3a2a, ei: 1.3 }), -0.4, 0.32 + h + rh * 0.5 + 0.92, -0.25, g);
+    mesh(CYL(0.035, 0.04, 0.85, 5), postM, w / 2 + 0.42, 0.45, 0.35, g);
+    mesh(BOX(0.6, 0.4, 0.05), M(0x0d3d38), w / 2 + 0.42, 1.05, 0.35, g);
+    for (const [i, bh] of [[0, 0.1], [1, 0.18], [2, 0.13], [3, 0.26]]) mesh(BOX(0.08, bh, 0.02), M(0x5ef2c9, { emissive: 0x5ef2c9, ei: 1.2 }), w / 2 + 0.24 + i * 0.12, 0.9 + bh / 2, 0.385, g);
+  } });
+// Juan: morado, buzón de postventa y referidos
+botHouse({ id: 'casaJuan', pos: local(P.rp, 6.4, 0.8), wall: 0xf6ecdc, roof: 0xa77bf0, trim: 0xe0b44c, door: 0x4b2a7a,
+  title: 'Juan', sub: 'Postventa Royal', bg1: '#a77bf0', bg2: '#7c4dcc', fg: '#fff8e6',
+  detail: (g, { w, d }) => {
+    mesh(CYL(0.035, 0.04, 0.8, 5), postM, w / 2 + 0.4, 0.45, d / 2, g);
+    mesh(BOX(0.26, 0.24, 0.4), M(0x7c4dcc), w / 2 + 0.4, 0.97, d / 2, g);
+    mesh(BOX(0.03, 0.2, 0.08), M(0xf2c14e), w / 2 + 0.55, 1.12, d / 2 + 0.1, g);
+  } });
+// Alberto: morado y oro, cajas de órdenes con su portapapeles
+botHouse({ id: 'casaAlberto', pos: local(P.rp, -6.5, 1.6), wall: 0xf3ecfb, roof: 0x7c4dcc, trim: 0xf2c94c, door: 0x4b2a7a,
+  title: 'Alberto', sub: 'Órdenes', bg1: '#7c4dcc', bg2: '#5a2fa0', fg: '#ffd77a',
+  detail: (g, { w, d }) => {
+    const cm = M(0xc99a63);
+    mesh(BOX(0.45, 0.45, 0.45), cm, w / 2 + 0.4, 0.31, d / 2 - 0.2, g);
+    mesh(BOX(0.45, 0.45, 0.45), cm, w / 2 + 0.42, 0.31, d / 2 - 0.7, g);
+    mesh(BOX(0.4, 0.4, 0.4), cm, w / 2 + 0.41, 0.74, d / 2 - 0.45, g).rotation.y = 0.3;
+    mesh(BOX(0.22, 0.03, 0.28), M(0xb07a4e), w / 2 + 0.4, 0.55, d / 2 - 0.2, g);
+    mesh(BOX(0.17, 0.035, 0.22), M(0xffffff), w / 2 + 0.4, 0.56, d / 2 - 0.2, g);
+  } });
+// Valeria: morado oscuro, tablero de vacantes y megáfono
+botHouse({ id: 'casaValeria', pos: local(P.rp, 4.4, -3.3), wall: 0xefe6fb, roof: 0x5a2fa0, trim: 0xe8d8ff, door: 0x3a1e6a,
+  title: 'Valeria', sub: 'Reclutadora', bg1: '#5a2fa0', bg2: '#3e1f75', fg: '#f2e8ff',
+  detail: (g, { w }) => {
+    const x = -(w / 2 + 0.5);
+    for (const z of [-0.05, 0.75]) mesh(CYL(0.035, 0.04, 1.3, 5), postM, x, 0.65, z, g);
+    const b = new THREE.Group(); b.position.set(x, 1.0, 0.35); b.rotation.y = Math.PI / 2; g.add(b);
+    mesh(BOX(0.85, 0.55, 0.06), M(0x5a2fa0), 0, 0, 0, b);
+    mesh(BOX(0.75, 0.45, 0.07), M(0xc99a63), 0, 0, 0, b);
+    for (const [px, py] of [[-0.22, 0.08], [0.02, -0.06], [0.24, 0.1]]) mesh(BOX(0.16, 0.2, 0.08), M(0xffffff), px, py, 0, b);
+    const mg = mesh(new THREE.ConeGeometry(0.11, 0.26, 8, 1, true), M(0xe8d8ff, { double: true }), 0, 0.42, 0, b); mg.rotation.z = Math.PI / 2;
+  } });
+// Clarita: durazno, tendedero del día a día
+botHouse({ id: 'casaClarita', pos: local(P.ap, -4.5, 0.5), wall: 0xffe2cc, roof: 0xf2a07a, trim: 0xfff6ec, door: 0xb8704e,
+  title: 'Clarita', sub: 'Día a Día', bg1: '#ffb38a', bg2: '#f08e62', fg: '#fffaf2',
+  detail: (g, { w }) => {
+    const x = w / 2 + 0.45;
+    for (const z of [-0.7, 0.8]) mesh(CYL(0.03, 0.035, 1.2, 5), postM, x, 0.6, z, g);
+    mesh(BOX(0.015, 0.015, 1.5), M(0xfff6ec), x, 1.15, 0.05, g);
+    for (const [z, c] of [[-0.35, 0xff8fb1], [0.05, 0xffe066], [0.42, 0x8fd0ff]]) mesh(BOX(0.04, 0.3, 0.26), M(c), x, 0.98, z, g);
+  } });
+// Sofía: rosa suave, corazoncito junto a la puerta
+botHouse({ id: 'casaSofia', pos: local(P.ap, 6.3, -1.6), wall: 0xfff0f4, roof: 0xf6aabb, trim: 0xffffff, door: 0xc0687e,
+  title: 'Sofía', sub: 'Apoyo', bg1: '#f6aabb', bg2: '#e88aa0', fg: '#fffafc',
+  detail: (g, { w, d }) => {
+    const hs = new THREE.Shape(); hs.moveTo(0, -0.12);
+    hs.bezierCurveTo(-0.02, -0.08, -0.15, -0.02, -0.15, 0.05); hs.bezierCurveTo(-0.15, 0.13, -0.05, 0.15, 0, 0.08);
+    hs.bezierCurveTo(0.05, 0.15, 0.15, 0.13, 0.15, 0.05); hs.bezierCurveTo(0.15, -0.02, 0.02, -0.08, 0, -0.12);
+    mesh(CYL(0.03, 0.035, 0.85, 5), postM, w / 2 + 0.35, 0.45, d / 2, g);
+    mesh(new THREE.ExtrudeGeometry(hs, { depth: 0.05, bevelEnabled: false, curveSegments: 3 }), M(0xf27a98, { emissive: 0xf05a80, ei: 0.35 }), w / 2 + 0.35, 1.0, d / 2, g);
+  } });
+// Camila (clave andres): verde, monedas y libro de cuentas
+botHouse({ id: 'casaCamila', pos: local(P.ap, 2.4, -4.4), wall: 0xeefaf1, roof: 0x5fbf86, trim: 0xf4ecd8, door: 0x2f6b4a,
+  title: 'Camila', sub: 'Finanzas personales', bg1: '#5fbf86', bg2: '#3f9a66', fg: '#fbfff8',
+  detail: (g, { w, d }) => {
+    const goldM = M(0xf2c14e, { metal: 0.55, rough: 0.35 });
+    for (let i = 0; i < 4; i++) mesh(CYL(0.12, 0.12, 0.045, 10), goldM, w / 2 + 0.38 + (i % 2) * 0.02, 0.11 + i * 0.05, d / 2 - 0.1, g);
+    mesh(BOX(0.36, 0.3, 0.3), M(0xb07a4e), w / 2 + 0.4, 0.24, d / 2 - 0.6, g);
+    const book = mesh(BOX(0.3, 0.06, 0.38), M(0x3f8a5a), w / 2 + 0.4, 0.42, d / 2 - 0.6, g); book.rotation.y = 0.2;
+    mesh(BOX(0.26, 0.065, 0.34), M(0xfff6e0), w / 2 + 0.41, 0.42, d / 2 - 0.6, g).rotation.y = 0.2;
+  } });
+// ---------- Letreros con nombre para Lupita y Diego (sus casas ya existen)
+{
+  const fin = idRoots.get('casaFinanzas')[0];
+  const plq = signMesh(signTexture('Lupita', 'Finanzas', '#2f6b55', '#1f4f3e', '#f2c14e', 512, 150), 0.95, 0.28); plq.position.set(0, 1.98, 1.42); fin.add(plq);
+  const con = idRoots.get('casaConstructor')[0], p = new THREE.Group(); p.position.set(-1.4, 0, 1.6); con.add(p);
+  mesh(CYL(0.04, 0.05, 1.3, 6), postM, 0, 0.65, -0.05, p);
+  mesh(BOX(1.0, 0.36, 0.04), M(0xffa94d), 0, 1.25, -0.02, p);
+  const dg = signMesh(signTexture('Diego', 'Constructor', '#ff8a66', '#e2553a', '#fff6ea'), 0.92, 0.29); dg.position.set(0, 1.25, 0.005); p.add(dg);
+}
+
 // ================= MUELLE Y BARCO =================
 let boat = null;
 {
@@ -999,7 +1131,7 @@ let boat = null;
 
 // ================= VEGETACIÓN =================
 const zones = [{ x: 0, z: 0, r: 6.8 }, { x: 0, z: -9.2, r: 5.8 }, { x: P.rp.x, z: P.rp.z, r: 5.4 }, { x: P.tr.x, z: P.tr.z, r: 4.6 },
-  { x: P.ag.x, z: P.ag.z, r: 6.6 }, { x: P.ap.x, z: P.ap.z, r: 4.4 }, { x: GARDEN.x, z: GARDEN.z, r: 2.4 }, { x: 0, z: PIER_Z0, r: 2.4 }];
+  { x: P.ag.x, z: P.ag.z, r: 6.6 }, { x: P.ap.x, z: P.ap.z, r: 4.4 }, { x: GARDEN.x, z: GARDEN.z, r: 2.4 }, { x: 0, z: PIER_Z0, r: 2.4 }].concat(botHomeZones);
 function freeSpot(x, z, pad = 1.5) {
   for (const zn of zones) if (Math.hypot(x - zn.x, z - zn.z) < zn.r) return false;
   for (const p of pathSamples) if (Math.hypot(x - p.x, z - p.z) < pad) return false;
@@ -1271,7 +1403,10 @@ function addLabel(anchor, id, html, kind, dy = 0) {
 const esc = (s) => s.replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
 const bldPill = (name, css, extra = '') => `<div class="pill"><i style="background:${css}"></i>${esc(name)}${extra}</div>`;
 addLabel(plaza.userData.anchor, 'plaza', bldPill('Plaza del Rey', CIV.centro.css), 'bld');
-for (const [id, name, civ, extra] of [['rpOffice', 'Royal Prestige', 'rp', ''], ['trTower', 'Trading', 'tr', ''], ['agStudio', 'Agencia IA', 'ag', ' <span class="new">NUEVO</span>'], ['casaExplorador', 'Casa del Explorador · Marco', 'ag', ''], ['casaConstructor', 'Casa del Constructor · Diego', 'ag', ''], ['casaFinanzas', 'Casa de Finanzas · Lupita', 'ag', ''], ['apCottage', 'Apoyo', 'ap', '']]) {
+for (const [id, name, civ, extra] of [['rpOffice', 'Royal Prestige', 'rp', ''], ['trTower', 'Trading', 'tr', ''], ['agStudio', 'Agencia IA', 'ag', ' <span class="new">NUEVO</span>'], ['casaExplorador', 'Casa del Explorador · Marco', 'ag', ''], ['casaConstructor', 'Casa del Constructor · Diego', 'ag', ''], ['casaFinanzas', 'Casa de Finanzas · Lupita', 'ag', ''], ['apCottage', 'Apoyo', 'ap', ''],
+  ['casaPedro', 'Casa de Pedro', 'centro', ''], ['casaCarlos', 'Casa de Carlos', 'centro', ''], ['casaTomas', 'Casa de Tomás', 'centro', ''], ['casaRita', 'Casa de Rita', 'tr', ''],
+  ['casaJuan', 'Casa de Juan', 'rp', ''], ['casaAlberto', 'Casa de Alberto', 'rp', ''], ['casaValeria', 'Casa de Valeria', 'rp', ''],
+  ['casaClarita', 'Casa de Clarita', 'ap', ''], ['casaSofia', 'Casa de Sofía', 'ap', ''], ['casaCamila', 'Casa de Camila', 'ap', '']]) {
   const root = idRoots.get(id)[0]; addLabel(root.userData.anchor, id, bldPill(name, CIV[civ].css, extra), 'bld');
 }
 addLabel(idRoots.get('trTower')[0].userData.ticker, 'meme', `<div class="pill">$294.56 / $300 papel <b>SOLO PAPEL</b></div>`, 'ticker');
