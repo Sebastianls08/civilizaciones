@@ -11,16 +11,16 @@
   "aviso": "Solo agregados públicos. Trading en papel. Sin nombres, teléfonos ni notas de clientes.",
   "meme_hunter": {
     "aviso": "SOLO PAPEL / simulado. Sin wallets, llaves ni transacciones reales.",
-    "equity": 278.2245,
+    "equity": 280.5033,
     "equity_start": 298.7946,
-    "losses": 13,
-    "net_pnl_usd": -20.4133,
-    "open_positions": 2,
-    "rugs_skipped": 146,
-    "trades": 16,
-    "updated": "2026-11-19 12:52:01 PT",
-    "win_rate_pct": 18.8,
-    "wins": 3
+    "losses": 14,
+    "net_pnl_usd": -18.2912,
+    "open_positions": 0,
+    "rugs_skipped": 167,
+    "trades": 19,
+    "updated": "2026-11-19 13:20:21 PT",
+    "win_rate_pct": 26.3,
+    "wins": 5
   },
   "paper_candles": {
     "aviso": "SOLO PAPEL. Simulación, sin bróker ni órdenes reales.",
@@ -50,5 +50,5 @@
     "equity_total": 2240.8885,
     "running": true
   },
-  "updated": "2026-11-19 12:52:01 PT"
+  "updated": "2026-11-19 13:20:21 PT"
 }
