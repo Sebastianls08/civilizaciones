@@ -11,16 +11,16 @@
   "aviso": "Solo agregados públicos. Trading en papel. Sin nombres, teléfonos ni notas de clientes.",
   "meme_hunter": {
     "aviso": "SOLO PAPEL / simulado. Sin wallets, llaves ni transacciones reales.",
-    "equity": 280.1674,
-    "equity_start": 281.155,
-    "losses": 1,
-    "net_pnl_usd": -0.9876,
+    "equity": 298.7946,
+    "equity_start": 298.7946,
+    "losses": 0,
+    "net_pnl_usd": 0.0,
     "open_positions": 0,
-    "rugs_skipped": 31,
-    "trades": 2,
-    "updated": "2026-11-18 13:50:36 PT",
-    "win_rate_pct": 50.0,
-    "wins": 1
+    "rugs_skipped": 5,
+    "trades": 0,
+    "updated": "2026-11-19 07:57:15 PT",
+    "win_rate_pct": 0.0,
+    "wins": 0
   },
   "paper_candles": {
     "aviso": "SOLO PAPEL. Simulación, sin bróker ni órdenes reales.",
@@ -46,9 +46,9 @@
         "scenario": "IBKR"
       }
     ],
-    "day": "2026-11-18",
+    "day": "2026-11-19",
     "equity_total": 2240.8885,
     "running": true
   },
-  "updated": "2026-11-18 13:50:36 PT"
+  "updated": "2026-11-19 07:57:15 PT"
 }
