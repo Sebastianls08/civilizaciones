@@ -16,9 +16,9 @@
     "losses": 14,
     "net_pnl_usd": -18.2912,
     "open_positions": 0,
-    "rugs_skipped": 167,
+    "rugs_skipped": 177,
     "trades": 19,
-    "updated": "2026-11-19 13:20:21 PT",
+    "updated": "2026-11-19 13:35:26 PT",
     "win_rate_pct": 26.3,
     "wins": 5
   },
@@ -50,5 +50,5 @@
     "equity_total": 2240.8885,
     "running": true
   },
-  "updated": "2026-11-19 13:20:21 PT"
+  "updated": "2026-11-19 13:35:26 PT"
 }
