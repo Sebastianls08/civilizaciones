@@ -273,7 +273,11 @@ const INFO = {
   plaza: { name: 'Plaza del Rey', civ: 'centro', desc: 'El corazón de la isla, con el trono y el castillo. Aquí se cruzan todos los caminos y se reúnen las civilizaciones.' },
   juan: { name: 'Juan - Postventa Royal', civ: 'rp', role: 'Postventa Royal', desc: 'Juan se encarga de postventa y del programa de referidos en Konverta (ruleta 4 en 14).' },
   alberto: { name: 'Alberto - Órdenes', civ: 'rp', role: 'Órdenes', desc: 'Alberto arma y da seguimiento a las órdenes en RoyalOne.' },
-  rpOffice: { name: 'Oficina Royal Prestige', civ: 'rp', desc: 'El showroom de Royal Prestige: aquí se cuida a los clientes después de la venta, se mueven los referidos y se arman las órdenes.' },
+  valeria: { name: 'Valeria - Reclutadora', civ: 'rp', role: 'Reclutadora', desc: 'Valeria recluta personas para el equipo de Royal Prestige y publica en grupos de empleo. El rey aprueba cada publicación antes de subirla.' },
+  rpOffice: { name: 'Oficina Royal Prestige', civ: 'rp', desc: 'El showroom de Royal Prestige: aquí se cuida a los clientes después de la venta, se mueven los referidos, se arman las órdenes y se recluta gente nueva para el equipo.' },
+  tomas: { name: 'Tomás - Cazador de ofertas', civ: 'centro', role: 'Cazador de ofertas', desc: 'Tomás busca ofertas y compara precios, reseñas y tiendas. Nunca compra sin el sí del rey.' },
+  camila: { name: 'Camila - Guionista', civ: 'centro', role: 'Guionista', desc: 'Camila escribe guiones para videos de redes sociales, con gancho y cierre.' },
+  andres: { name: 'Andrés - Finanzas personales', civ: 'ap', role: 'Finanzas personales', desc: 'Andrés lleva las finanzas personales del reino (ingresos, gastos y deudas). Las finanzas de la agencia las sigue llevando Lupita. Aquí no se muestran cifras privadas.' },
   rita: { name: 'Rita - Trader', civ: 'tr', role: 'Trader', desc: 'Rita es la trader: supervisa el bot de trading y reporta cómo va el día. Solo dinero de prueba.' },
   meme: { name: 'Meme-Hunter (bot de monedas)', civ: 'tr', role: 'Bot de monedas', desc: 'Saldo: $294.56 de $300 (papel) · 6 operaciones, 2 ganadas, 4 perdidas, 77 rugs evitados. Actualizado 1:17 PM PT, 16 nov 2026. SOLO PAPEL, sin dinero real.',
     stats: [['Saldo (papel)', '$294.56 / $300'], ['Operaciones', '6'], ['Ganadas / perdidas', '2 / 4'], ['Rugs evitados', '77']], badge: 'SOLO PAPEL · SIN DINERO REAL' },
@@ -1136,6 +1140,8 @@ function makePerson(o) {
 
 function pingPts(pts, startFrac = 0) { return { pts, start: Math.floor((pts.length - 1) * startFrac) }; }
 const pedroPts = [V(2.15, 1.0), V(2.45, -0.4), V(2.0, 1.7)];
+const camilaPts = [V(-2.15, 1.0), V(-2.0, 1.7), V(-2.45, -0.4)];
+const tomasPts = new THREE.QuadraticBezierCurve3(V(0, 5.0), V(0.3, (4.4 + PIER_Z0) / 2), V(0, PIER_Z0 - 0.4)).getSpacedPoints(8);
 const sofiaPts = []; for (let i = 0; i < 6; i++) { const a = i / 6 * Math.PI * 2; sofiaPts.push(GARDEN.clone().add(V(Math.cos(a) * 1.6, Math.sin(a) * 1.6 + 0.6).applyAxisAngle(new THREE.Vector3(0, 1, 0), frame(P.ap).yaw))); }
 
 const AGENTS_DEF = [
@@ -1181,6 +1187,21 @@ const AGENTS_DEF = [
         mesh(BOX(0.36, 0.06, 0.02), M(0xf2c14e, { metal: 0.5, rough: 0.4 }), 0, 0.86, 0.22, inner);
       } },
     label: { name: 'Lupita', sub: 'Finanzas', dot: '#f2c14e' } },
+  { id: 'valeria', path: pingPts(PATHS.rp, 0.8), speed: 1.25, o: { body: 0x5a2fa0, accent: 0xe8d8ff, hair: 'pony', hairC: 0x4a2a1e, skin: 0xe8b890, legs: 0x2a2440,
+    extra: ({ armR }) => { mesh(BOX(0.24, 0.3, 0.03), M(0xfff6e6), 0, -0.46, 0.11, armR); mesh(BOX(0.2, 0.06, 0.035), M(0x7c4dcc), 0, -0.36, 0.11, armR); } },
+    label: { name: 'Valeria', sub: 'Reclutadora', dot: '#8e5fe0' } },
+  { id: 'tomas', path: pingPts(tomasPts, 0.4), speed: 1.2, o: { body: 0xd8643a, accent: 0x2f5d7a, hair: 'cap', skin: 0xd9a27a, legs: 0x34404a,
+    extra: ({ armR }) => { const lens = mesh(new THREE.TorusGeometry(0.09, 0.02, 5, 12), M(0x3a2a22), 0, -0.6, 0.12, armR); lens.rotation.y = Math.PI / 2; mesh(BOX(0.04, 0.16, 0.04), M(0x3a2a22), 0, -0.46, 0.12, armR); } },
+    label: { name: 'Tomás', sub: 'Cazador de ofertas', dot: '#e8834f' } },
+  { id: 'camila', path: { pts: camilaPts, start: 0 }, loop: true, pauseAt: [0, 1, 2], pause: [2.5, 2.5], speed: 0.65, o: { body: 0xd94a6a, accent: 0x2b2230, hair: 'long', hairC: 0x8a3a22, skin: 0xf0c39b, legs: 0x2b2a3a,
+    extra: ({ armL, armR }) => { mesh(BOX(0.2, 0.26, 0.03), M(0xfffaf0), 0, -0.44, 0.1, armL); mesh(BOX(0.14, 0.02, 0.035), M(0x9aa0aa), 0, -0.4, 0.1, armL); mesh(CYL(0.015, 0.015, 0.22, 5), M(0xf2c14e), 0, -0.48, 0.1, armR); } },
+    label: { name: 'Camila', sub: 'Guionista', dot: '#f07a92' } },
+  { id: 'andres', path: pingPts(PATHS.ap, 0.75), speed: 1.1, o: { body: 0x3f8a5a, accent: 0xf4ecd8, hair: 'short', hairC: 0x1f1714, skin: 0xc68b62, legs: 0x3a3a4a,
+    extra: ({ inner, armL }) => {
+      mesh(BOX(0.3, 0.035, 0.02), M(0x2b2230), 0, 1.23, 0.215, inner);
+      mesh(new THREE.IcosahedronGeometry(0.12, 0), M(0xf7a8c0), 0, -0.52, 0.08, armL); mesh(BOX(0.06, 0.015, 0.02), M(0x5a3b2a), 0, -0.41, 0.08, armL);
+    } },
+    label: { name: 'Andrés', sub: 'Finanzas personales', dot: '#5fbf86' } },
 ];
 
 const agents = [];
